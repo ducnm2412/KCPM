@@ -1,0 +1,219 @@
+spring:
+  application:
+    name: uth-confms
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/uth_confms}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+  
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+  
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  
+  servlet:
+    multipart:
+      max-file-size: ${STORAGE_MAX_FILE_SIZE_MB:20}MB
+      max-request-size: ${STORAGE_MAX_FILE_SIZE_MB:20}MB
+  
+  # OAuth2 Configuration (chỉ khi app.oauth2.enabled=true)
+  security:
+    oauth2:
+      enabled: true
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope: openid,profile,email
+            redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+jwt:
+  secret: ${JWT_SECRET:your-256-bit-secret-key-change-in-production-minimum-32-characters}
+  access-token-validity: 3600000
+  refresh-token-validity: 86400000
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    try-it-out-enabled: true
+    filter: true
+  show-actuator: false
+  packages-to-scan: com.uth.confms
+  paths-to-match: /api/**
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  writer-with-default-pretty-print: true
+  model-and-view-allowed: false
+
+logging:
+  level:
+    root: INFO
+    com.uth: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+    org.hibernate: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ${LOG_FILE_PATH:./logs/application.log}
+    max-size: 10MB
+    max-history: 7
+
+app:
+  file-storage:
+    path: ${FILE_STORAGE_PATH:./uploads}
+    max-size: 20971520 # 20MB
+  storage:
+    # Storage backend: local, s3, minio
+    backend: ${STORAGE_BACKEND:local}
+    base-dir: ${STORAGE_BASE_DIR:/data/uploads}
+    max-file-size-mb: ${STORAGE_MAX_FILE_SIZE_MB:20}
+    # S3/MinIO configuration (only used when backend is s3 or minio)
+    s3:
+      endpoint: ${STORAGE_S3_ENDPOINT:}
+      region: ${STORAGE_S3_REGION:us-east-1}
+      bucket: ${STORAGE_S3_BUCKET:}
+      access-key: ${STORAGE_S3_ACCESS_KEY:}
+      secret-key: ${STORAGE_S3_SECRET_KEY:}
+      path-style-access: ${STORAGE_S3_PATH_STYLE_ACCESS:true}
+    # Backup configuration
+    backup:
+      enabled: ${STORAGE_BACKUP_ENABLED:true}
+      directory: ${STORAGE_BACKUP_DIRECTORY:${app.storage.base-dir}/backups}
+      retention-days: ${STORAGE_BACKUP_RETENTION_DAYS:30}
+      daily:
+        enabled: ${STORAGE_BACKUP_DAILY_ENABLED:true}
+        cron: ${STORAGE_BACKUP_DAILY_CRON:0 0 2 * * ?}
+      weekly:
+        enabled: ${STORAGE_BACKUP_WEEKLY_ENABLED:true}
+        cron: ${STORAGE_BACKUP_WEEKLY_CRON:0 0 3 ? * SUN}
+      cleanup:
+        cron: ${STORAGE_BACKUP_CLEANUP_CRON:0 0 4 * * ?}
+  email:
+    verification:
+      expiration-hours: 24
+    from-name: ${EMAIL_FROM_NAME:UTH-ConfMS}
+    # Email quota configuration
+    quota:
+      daily-limit: ${EMAIL_QUOTA_DAILY_LIMIT:500}
+      hourly-limit: ${EMAIL_QUOTA_HOURLY_LIMIT:100}
+    # Retry configuration
+    retry:
+      max-attempts: ${EMAIL_RETRY_MAX_ATTEMPTS:3}
+      initial-delay-ms: ${EMAIL_RETRY_INITIAL_DELAY_MS:1000}
+      multiplier: ${EMAIL_RETRY_MULTIPLIER:2.0}
+    # Async configuration
+    async:
+      core-pool-size: ${EMAIL_ASYNC_CORE_POOL_SIZE:5}
+      max-pool-size: ${EMAIL_ASYNC_MAX_POOL_SIZE:10}
+      queue-capacity: ${EMAIL_ASYNC_QUEUE_CAPACITY:100}
+      batch-size: ${EMAIL_ASYNC_BATCH_SIZE:10}
+      batch-delay-ms: ${EMAIL_ASYNC_BATCH_DELAY_MS:1000}
+    # Rate limiting
+    rate-limit:
+      max-per-minute: ${EMAIL_RATE_LIMIT_MAX_PER_MINUTE:60}
+  ai:
+    enabled: ${AI_ENABLED:true}
+    confidence-threshold: ${AI_CONFIDENCE_THRESHOLD:0.5}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+  pc:
+    invitation:
+      expiration-days: 7
+    workload:
+      max-assignments: ${PC_MAX_ASSIGNMENTS:8}
+      warning-threshold: ${PC_WARNING_THRESHOLD:0.8}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173}
+  rate-limiting:
+    enabled: ${RATE_LIMITING_ENABLED:true}
+    use-redis: ${RATE_LIMITING_USE_REDIS:true}
+    auth:
+      max-requests: ${RATE_LIMITING_AUTH_MAX:5}
+      window-seconds: ${RATE_LIMITING_AUTH_WINDOW:60}
+    api:
+      max-requests: ${RATE_LIMITING_API_MAX:100}
+      window-seconds: ${RATE_LIMITING_API_WINDOW:60}
+  oauth2:
+    enabled: ${OAUTH2_ENABLED:true}
+    providers:
+      google:
+        client-id: ${GOOGLE_CLIENT_ID:}
+        client-secret: ${GOOGLE_CLIENT_SECRET:}
+  submission:
+    deadline:
+      grace-period-hours: ${SUBMISSION_GRACE_PERIOD_HOURS:24}
+      enable-logging: ${SUBMISSION_DEADLINE_LOGGING:true}
+
+# Google OAuth2 Configuration (for GoogleTokenService)
+google:
+  client-id: ${GOOGLE_CLIENT_ID:}
+
+# AI Module Configuration
+ai:
+  enabled: ${AI_ENABLED:false}
+  mock-mode: ${AI_MOCK_MODE:false}
+  provider: ${AI_PROVIDER:gemini} # openapi or gemini
+  timeout-seconds: ${AI_TIMEOUT_SECONDS:30}
+  openai:
+    api-key: ${AI_OPENAI_API_KEY:}
+    model: ${AI_OPENAI_MODEL:gpt-4o-mini}
+    base-url: ${AI_OPENAI_BASE_URL:https://api.openai.com/v1}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-2.5-flash}
+    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1}
