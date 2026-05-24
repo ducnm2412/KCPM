@@ -1,4 +1,4 @@
-# UTH-ConfMS  
+# UTH-ConfMS
 
 Hệ thống quản lý giấy tờ cho Hội nghị Nghiên cứu Khoa học Trường ĐH UTH  
 Mô phỏng workflow kiểu EasyChair nhưng gọn, sạch, tối ưu cho vận hành nội bộ.
@@ -12,40 +12,40 @@ Hệ thống hỗ trợ toàn bộ quy trình hội nghị khoa học:
 
 ### Chức năng chính
 
-| Module | Mô tả |
-|--------|-------|
-| **Auth** | Đăng ký, đăng nhập, JWT + Refresh Token, OAuth2/Google SSO |
-| **Conference** | Tạo/cấu hình hội nghị, track, deadline, template email, CFP |
-| **Submission** | Tác giả nộp bài, sửa, rút, upload PDF + metadata |
-| **PC** | Quản lý PC member, mời reviewer, COI declaration |
-| **Assignment** | Gán bài cho reviewer, quản lý workload |
-| **Review** | Chấm điểm (thang điểm học thuật chuẩn hóa), nhận xét, thảo luận nội bộ |
-| **Decision** | Accept/Reject, gửi email kết quả hàng loạt |
-| **Camera-ready** | Upload bản cuối, kiểm tra PDF, xác nhận copyright |
-| **Reporting** | Dashboard, thống kê, snapshot, export báo cáo (PDF/Excel/CSV), Audit Logs với bộ lọc & export |
-| **Storage** | Lưu trữ file với MinIO hoặc Local filesystem |
-| **Email** | Gửi email với template, hàng đợi email với Redis |
-| **AI** | Hỗ trợ tóm tắt, gợi ý keyword, COI detection (Gemini AI) |
+| Module           | Mô tả                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| **Auth**         | Đăng ký, đăng nhập, JWT + Refresh Token, OAuth2/Google SSO                                    |
+| **Conference**   | Tạo/cấu hình hội nghị, track, deadline, template email, CFP                                   |
+| **Submission**   | Tác giả nộp bài, sửa, rút, upload PDF + metadata                                              |
+| **PC**           | Quản lý PC member, mời reviewer, COI declaration                                              |
+| **Assignment**   | Gán bài cho reviewer, quản lý workload                                                        |
+| **Review**       | Chấm điểm (thang điểm học thuật chuẩn hóa), nhận xét, thảo luận nội bộ                        |
+| **Decision**     | Accept/Reject, gửi email kết quả hàng loạt                                                    |
+| **Camera-ready** | Upload bản cuối, kiểm tra PDF, xác nhận copyright                                             |
+| **Reporting**    | Dashboard, thống kê, snapshot, export báo cáo (PDF/Excel/CSV), Audit Logs với bộ lọc & export |
+| **Storage**      | Lưu trữ file với MinIO hoặc Local filesystem                                                  |
+| **Email**        | Gửi email với template, hàng đợi email với Redis                                              |
+| **AI**           | Hỗ trợ tóm tắt, gợi ý keyword, COI detection (Gemini AI)                                      |
 
 ---
 
 ## 2. Công nghệ sử dụng
 
-| Thành phần | Công nghệ & Phiên bản |
-|-----------|----------------------|
-| **Backend** | Java 17, Spring Boot 3.3.5, Spring Web, Spring Security, Spring Data JPA |
-| **Auth** | JWT (Access + Refresh Token), OAuth2/OpenID Connect (Google SSO) |
-| **Frontend** | React 18 + Vite, CoreUI React, Axios |
-| **Database** | PostgreSQL 15+ |
-| **Cache/Queue** | Redis – cache token, rate limiting, email queue |
-| **Storage** | MinIO (S3-compatible) hoặc Local Storage |
-| **Email** | SMTP + Spring Mail (UTF-8 support) |
-| **ORM** | Hibernate / JPA |
-| **DTO Mapping** | MapStruct |
-| **Validation** | Jakarta Validation (Spring Validation) |
-| **API Docs** | Swagger / OpenAPI 3 |
-| **PDF Toolkit** | Apache PDFBox (kiểm tra/merge PDF) |
-| **AI** | Google Gemini 2.5 Flash |
+| Thành phần      | Công nghệ & Phiên bản                                                    |
+| --------------- | ------------------------------------------------------------------------ |
+| **Backend**     | Java 17, Spring Boot 3.3.5, Spring Web, Spring Security, Spring Data JPA |
+| **Auth**        | JWT (Access + Refresh Token), OAuth2/OpenID Connect (Google SSO)         |
+| **Frontend**    | React 18 + Vite, CoreUI React, Axios                                     |
+| **Database**    | PostgreSQL 15+                                                           |
+| **Cache/Queue** | Redis – cache token, rate limiting, email queue                          |
+| **Storage**     | MinIO (S3-compatible) hoặc Local Storage                                 |
+| **Email**       | SMTP + Spring Mail (UTF-8 support)                                       |
+| **ORM**         | Hibernate / JPA                                                          |
+| **DTO Mapping** | MapStruct                                                                |
+| **Validation**  | Jakarta Validation (Spring Validation)                                   |
+| **API Docs**    | Swagger / OpenAPI 3                                                      |
+| **PDF Toolkit** | Apache PDFBox (kiểm tra/merge PDF)                                       |
+| **AI**          | Google Gemini 2.5 Flash                                                  |
 
 ---
 
@@ -154,7 +154,6 @@ UTH-ConfMS/
 
 Xem hướng dẫn cài đặt chi tiết tại tài liệu [SETUP.md](SETUP.md).
 
-
 #### 7. Truy cập hệ thống
 
 - **Frontend**: http://localhost:3000
@@ -162,8 +161,9 @@ Xem hướng dẫn cài đặt chi tiết tại tài liệu [SETUP.md](SETUP.md)
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 
 #### Tài khoản mặc định
-| Role | Email | Password |
-|------|-------|----------|
+
+| Role  | Email            | Password |
+| ----- | ---------------- | -------- |
 | Admin | admin@uth.edu.vn | admin123 |
 
 > ⚠️ **Lưu ý**: Đổi mật khẩu admin ngay sau khi setup!
@@ -173,33 +173,37 @@ Xem hướng dẫn cài đặt chi tiết tại tài liệu [SETUP.md](SETUP.md)
 ## 8. API Endpoints
 
 ### Authentication
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| POST | `/api/auth/register` | Đăng ký tài khoản |
-| POST | `/api/auth/login` | Đăng nhập |
-| POST | `/api/auth/refresh` | Refresh token |
-| GET | `/api/auth/me` | Lấy thông tin user |
+
+| Method | Endpoint             | Mô tả              |
+| ------ | -------------------- | ------------------ |
+| POST   | `/api/auth/register` | Đăng ký tài khoản  |
+| POST   | `/api/auth/login`    | Đăng nhập          |
+| POST   | `/api/auth/refresh`  | Refresh token      |
+| GET    | `/api/auth/me`       | Lấy thông tin user |
 
 ### Conference
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET | `/api/v1/conferences` | Danh sách hội nghị |
-| POST | `/api/v1/conferences` | Tạo hội nghị mới |
-| GET | `/api/v1/conferences/{id}` | Chi tiết hội nghị |
+
+| Method | Endpoint                   | Mô tả              |
+| ------ | -------------------------- | ------------------ |
+| GET    | `/api/v1/conferences`      | Danh sách hội nghị |
+| POST   | `/api/v1/conferences`      | Tạo hội nghị mới   |
+| GET    | `/api/v1/conferences/{id}` | Chi tiết hội nghị  |
 
 ### Submission
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| POST | `/api/v1/submissions` | Nộp bài mới |
-| GET | `/api/v1/submissions/my` | Bài nộp của tôi |
-| PUT | `/api/v1/submissions/{id}` | Cập nhật bài |
+
+| Method | Endpoint                   | Mô tả           |
+| ------ | -------------------------- | --------------- |
+| POST   | `/api/v1/submissions`      | Nộp bài mới     |
+| GET    | `/api/v1/submissions/my`   | Bài nộp của tôi |
+| PUT    | `/api/v1/submissions/{id}` | Cập nhật bài    |
 
 ### Camera-Ready
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET | `/api/v1/conferences/{id}/camera-ready` | Danh sách submissions |
-| POST | `/api/v1/conferences/{id}/camera-ready/{paperId}/upload` | Upload camera-ready |
-| POST | `/api/v1/conferences/{id}/camera-ready/{paperId}/review` | Review submission |
+
+| Method | Endpoint                                                 | Mô tả                 |
+| ------ | -------------------------------------------------------- | --------------------- |
+| GET    | `/api/v1/conferences/{id}/camera-ready`                  | Danh sách submissions |
+| POST   | `/api/v1/conferences/{id}/camera-ready/{paperId}/upload` | Upload camera-ready   |
+| POST   | `/api/v1/conferences/{id}/camera-ready/{paperId}/review` | Review submission     |
 
 Xem đầy đủ tại: **http://localhost:8080/swagger-ui.html**
 
@@ -244,4 +248,10 @@ Xem hướng dẫn cấu hình chi tiết (Storage, AI, Rate Limiting) tại tà
 
 ---
 
-*Cập nhật lần cuối: 28/01/2026*
+_Cập nhật lần cuối: 28/01/2026_
+
+## Jira GitHub Integration Demo
+
+Issue: SCRUM-7
+
+Testing Jira and GitHub integration.
