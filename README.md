@@ -255,3 +255,5 @@ _Cập nhật lần cuối: 28/01/2026_
 Issue: SCRUM-7
 
 Testing Jira and GitHub integration.
+
+test demo 2
