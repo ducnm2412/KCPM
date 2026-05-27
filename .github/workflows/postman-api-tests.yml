@@ -48,11 +48,11 @@ jobs:
           nohup java \
             -Dspring.profiles.active=dev \
             -Dserver.port=8080 \
-            -Dapp.rate-limiting.enabled=false \
+            -Dapp.rate-limiting.enabled=true \
             -Dapp.rate-limiting.use-redis=false \
+            -Dapp.rate-limiting.auth.max-requests=100 \
+            -Dapp.rate-limiting.api.max-requests=1000 \
             -Dspring.cache.type=none \
-            -Dspring.data.redis.host= \
-            -Dspring.mail.host= \
             -jar target/confms-1.0.0.jar \
             > ../backend.log 2>&1 &
           echo $! > ../backend.pid
