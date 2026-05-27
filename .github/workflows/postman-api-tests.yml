@@ -1,0 +1,98 @@
+name: Postman API Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  postman-api-tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Newman
+        run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Build backend
+        working-directory: backend
+        run: mvn -B -DskipTests package
+
+      - name: Start backend with dev profile
+        working-directory: backend
+        run: |
+          nohup java \
+            -Dspring.profiles.active=dev \
+            -Dserver.port=8080 \
+            -Dapp.rate-limiting.enabled=false \
+            -Dapp.rate-limiting.use-redis=false \
+            -Dspring.cache.type=none \
+            -Dspring.data.redis.host= \
+            -Dspring.mail.host= \
+            -jar target/confms-1.0.0.jar \
+            > ../backend.log 2>&1 &
+          echo $! > ../backend.pid
+
+      - name: Wait for backend
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://localhost:8080/api-docs >/dev/null; then
+              echo "Backend is ready"
+              exit 0
+            fi
+            echo "Waiting for backend... ($i/60)"
+            sleep 2
+          done
+          echo "Backend did not start in time"
+          cat backend.log
+          exit 1
+
+      - name: Run Register API tests
+        run: |
+          mkdir -p postman/reports
+          newman run "postman/UTH-ConfMS API.postman_collection.json" \
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -d "postman/register-test-data.json" \
+            --folder "Register" \
+            --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
+            --env-var jiraDomain="${{ secrets.JIRA_DOMAIN }}" \
+            --env-var jiraEmail="${{ secrets.JIRA_EMAIL }}" \
+            --env-var jiraToken="${{ secrets.JIRA_TOKEN }}" \
+            --env-var jiraProjectKey="${{ secrets.JIRA_PROJECT_KEY }}" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export "postman/reports/register-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/register-report.html"
+
+      - name: Upload Newman reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-newman-reports
+          path: |
+            postman/reports
+            backend.log
