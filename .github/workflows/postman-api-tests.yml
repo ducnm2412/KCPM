@@ -101,6 +101,23 @@ jobs:
           cat backend.log
           exit 1
 
+      - name: Run Login API tests
+        run: |
+          mkdir -p postman/reports
+          newman run "postman/UTH-ConfMS API.postman_collection.json" \
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -d "postman/login-test-data.json" \
+            --folder "Login" \
+            --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
+            --env-var jiraDomain="${{ secrets.JIRA_DOMAIN }}" \
+            --env-var jiraEmail="${{ secrets.JIRA_EMAIL }}" \
+            --env-var jiraToken="${{ secrets.JIRA_TOKEN }}" \
+            --env-var jiraProjectKey="${{ secrets.JIRA_PROJECT_KEY }}" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export "postman/reports/login-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/login-report.html"
+
       - name: Run Register API tests
         run: |
           mkdir -p postman/reports
