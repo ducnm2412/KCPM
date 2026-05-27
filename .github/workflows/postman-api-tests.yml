@@ -55,18 +55,20 @@ jobs:
             -Dapp.rate-limiting.auth.max-requests=100 \
             -Dapp.rate-limiting.api.max-requests=1000 \
             -Dspring.cache.type=none \
+            -Dspring.data.redis.host=localhost \
+            -Dmanagement.health.redis.enabled=false \
             -jar target/confms-1.0.0.jar \
             > ../backend.log 2>&1 &
           echo $! > ../backend.pid
 
       - name: Wait for backend
         run: |
-          for i in {1..60}; do
+          for i in {1..120}; do
             if curl -fsS http://localhost:8080/api-docs >/dev/null; then
               echo "Backend is ready"
               exit 0
             fi
-            echo "Waiting for backend... ($i/60)"
+            echo "Waiting for backend... ($i/120)"
             sleep 2
           done
           echo "Backend did not start in time"
