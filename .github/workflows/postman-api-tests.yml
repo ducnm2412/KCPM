@@ -57,16 +57,30 @@ jobs:
             -Dspring.cache.type=none \
             -Dspring.data.redis.host=localhost \
             -Dmanagement.health.redis.enabled=false \
+            -Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration \
+            -Dspring.jpa.show-sql=false \
+            -Dlogging.level.org.hibernate=ERROR \
+            -Dlogging.level.org.springframework.data.redis=ERROR \
             -jar target/confms-1.0.0.jar \
             > ../backend.log 2>&1 &
           echo $! > ../backend.pid
 
       - name: Wait for backend
         run: |
+          backend_pid="$(cat backend.pid)"
           for i in {1..120}; do
+            if ! kill -0 "$backend_pid" 2>/dev/null; then
+              echo "Backend process exited before becoming ready"
+              cat backend.log
+              exit 1
+            fi
             if curl -fsS http://localhost:8080/api-docs >/dev/null; then
               echo "Backend is ready"
               exit 0
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "Last backend log lines:"
+              tail -n 80 backend.log || true
             fi
             echo "Waiting for backend... ($i/120)"
             sleep 2
