@@ -57,6 +57,9 @@ jobs:
             "-Dspring.jpa.hibernate.ddl-auto=create-drop" \
             "-Dspring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect" \
             "-Dspring.mail.host=localhost" \
+            "-Dapp.oauth2.enabled=false" \
+            "-Dspring.security.oauth2.client.registration.google.client-id=ci-disabled" \
+            "-Dspring.security.oauth2.client.registration.google.client-secret=ci-disabled" \
             "-Dapp.rate-limiting.enabled=true" \
             "-Dapp.rate-limiting.use-redis=false" \
             "-Dapp.rate-limiting.auth.max-requests=100" \
