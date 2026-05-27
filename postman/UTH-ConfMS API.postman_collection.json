@@ -117,7 +117,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"new.user@example.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\",\n  \"organizationId\": {{organizationId}},\n  \"phone\": \"0900000000\"\n}"
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"firstName\": \"{{firstName}}\",\n  \"lastName\": \"{{lastName}}\",\n  \"organizationId\": {{organizationId}},\n  \"phone\": \"{{phone}}\"\n}"
             },
             "url": "{{baseUrl}}/api/auth/register"
           }
