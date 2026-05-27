@@ -44,23 +44,32 @@ jobs:
         working-directory: backend
         run: mvn -B -DskipTests package
 
-      - name: Start backend with dev profile
+      - name: Start backend with CI config
         working-directory: backend
         run: |
           nohup java \
-            -Dspring.profiles.active=dev \
-            -Dserver.port=8080 \
-            -Dapp.rate-limiting.enabled=true \
-            -Dapp.rate-limiting.use-redis=false \
-            -Dapp.rate-limiting.auth.max-requests=100 \
-            -Dapp.rate-limiting.api.max-requests=1000 \
-            -Dspring.cache.type=none \
-            -Dspring.data.redis.host=localhost \
-            -Dmanagement.health.redis.enabled=false \
-            -Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration \
-            -Dspring.jpa.show-sql=false \
-            -Dlogging.level.org.hibernate=ERROR \
-            -Dlogging.level.org.springframework.data.redis=ERROR \
+            "-Dspring.profiles.active=ci" \
+            "-Dserver.port=8080" \
+            "-Dspring.datasource.url=jdbc:h2:mem:confms;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE" \
+            "-Dspring.datasource.username=sa" \
+            "-Dspring.datasource.password=" \
+            "-Dspring.datasource.driver-class-name=org.h2.Driver" \
+            "-Dspring.jpa.hibernate.ddl-auto=create-drop" \
+            "-Dspring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect" \
+            "-Dspring.mail.host=localhost" \
+            "-Dapp.rate-limiting.enabled=true" \
+            "-Dapp.rate-limiting.use-redis=false" \
+            "-Dapp.rate-limiting.auth.max-requests=100" \
+            "-Dapp.rate-limiting.api.max-requests=1000" \
+            "-Dapp.storage.base-dir=./uploads" \
+            "-Dapp.storage.backup.enabled=false" \
+            "-Dspring.cache.type=none" \
+            "-Dspring.data.redis.host=localhost" \
+            "-Dmanagement.health.redis.enabled=false" \
+            "-Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration" \
+            "-Dspring.jpa.show-sql=false" \
+            "-Dlogging.level.org.hibernate=ERROR" \
+            "-Dlogging.level.org.springframework.data.redis=ERROR" \
             -jar target/confms-1.0.0.jar \
             > ../backend.log 2>&1 &
           echo $! > ../backend.pid
