@@ -62,7 +62,10 @@ pipeline {
 
         stage('Deploy To EC2') {
             when {
-                branch 'main'
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                }
             }
             steps {
                 sshagent(credentials: [params.EC2_SSH_CREDENTIALS_ID]) {
