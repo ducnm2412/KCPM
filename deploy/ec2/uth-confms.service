@@ -1,0 +1,15 @@
+[Unit]
+Description=UTH ConfMS Spring Boot API
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/uth-confms
+EnvironmentFile=/etc/uth-confms/uth-confms.env
+ExecStart=/usr/bin/java -jar /opt/uth-confms/app.jar --spring.profiles.active=prod
+SuccessExitStatus=143
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
