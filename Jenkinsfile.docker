@@ -29,14 +29,7 @@ pipeline {
             steps {
                 sh '''
                     rm -f "$RELEASE_ARCHIVE"
-                    tar \
-                      --exclude='.git' \
-                      --exclude='frontend/node_modules' \
-                      --exclude='frontend/dist' \
-                      --exclude='backend/target' \
-                      --exclude='.postman' \
-                      --exclude='TestReport.xlsx' \
-                      -czf "$RELEASE_ARCHIVE" .
+                    git ls-files -z | tar --null -T - -czf "$RELEASE_ARCHIVE"
                 '''
                 archiveArtifacts artifacts: "${RELEASE_ARCHIVE}", fingerprint: true
             }
