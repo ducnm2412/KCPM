@@ -20,7 +20,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.postgresql.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
         use_sql_comments: false
     open-in-view: false
