@@ -1,6 +1,10 @@
 spring:
   application:
     name: uth-confms
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
   
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/uth_confms}
