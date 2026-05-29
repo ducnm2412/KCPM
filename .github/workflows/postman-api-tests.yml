@@ -17,21 +17,23 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Detect Auth Postman tests
-        id: auth-postman-tests
+      - name: Detect CFP Postman tests
+        id: cfp-tests
         run: |
           if [ -f "postman/UTH-ConfMS API.postman_collection.json" ] \
             && [ -f "postman/UTH-ConfMS Local.postman_environment.json" ] \
-            && [ -f "postman/login-test-data.json" ] \
-            && [ -f "postman/register-test-data.json" ]; then
+            && [ -f "postman/cfp-get-by-conference-data.json" ] \
+            && [ -f "postman/cfp-create-update-data.json" ] \
+            && [ -f "postman/cfp-publish-data.json" ] \
+            && [ -f "postman/cfp-close-data.json" ]; then
             echo "has_tests=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_tests=false" >> "$GITHUB_OUTPUT"
-            echo "No Auth Postman tests found on this branch. Skipping Newman run."
+            echo "No CFP Postman tests found on this branch."
           fi
 
       - name: Set up Java 17
-        if: steps.auth-postman-tests.outputs.has_tests == 'true'
+        if: steps.cfp-tests.outputs.has_tests == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -39,22 +41,22 @@ jobs:
           cache: maven
 
       - name: Set up Node.js
-        if: steps.auth-postman-tests.outputs.has_tests == 'true'
+        if: steps.cfp-tests.outputs.has_tests == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Install Newman
-        if: steps.auth-postman-tests.outputs.has_tests == 'true'
+        if: steps.cfp-tests.outputs.has_tests == 'true'
         run: npm install -g newman newman-reporter-htmlextra
 
       - name: Build backend
-        if: steps.auth-postman-tests.outputs.has_tests == 'true'
+        if: steps.cfp-tests.outputs.has_tests == 'true'
         working-directory: backend
         run: mvn -B -DskipTests package
 
-      - name: Start backend with CI config
-        if: steps.auth-postman-tests.outputs.has_tests == 'true'
+      - name: Start backend
+        if: steps.cfp-tests.outputs.has_tests == 'true'
         working-directory: backend
         run: |
           nohup java \
@@ -70,89 +72,65 @@ jobs:
             "-Dapp.oauth2.enabled=false" \
             "-Dspring.security.oauth2.client.registration.google.client-id=ci-disabled" \
             "-Dspring.security.oauth2.client.registration.google.client-secret=ci-disabled" \
-            "-Dapp.rate-limiting.enabled=true" \
-            "-Dapp.rate-limiting.use-redis=false" \
-            "-Dapp.rate-limiting.auth.max-requests=100" \
-            "-Dapp.rate-limiting.api.max-requests=1000" \
-            "-Dapp.storage.base-dir=./uploads" \
-            "-Dapp.storage.backup.enabled=false" \
-            "-Dspring.cache.type=none" \
-            "-Dspring.data.redis.host=localhost" \
-            "-Dmanagement.health.redis.enabled=false" \
-            "-Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration" \
-            "-Dspring.jpa.show-sql=false" \
-            "-Dlogging.level.org.hibernate=ERROR" \
-            "-Dlogging.level.org.springframework.data.redis=ERROR" \
             -jar target/confms-1.0.0.jar \
             > ../backend.log 2>&1 &
           echo $! > ../backend.pid
 
       - name: Wait for backend
-        if: steps.auth-postman-tests.outputs.has_tests == 'true'
+        if: steps.cfp-tests.outputs.has_tests == 'true'
         run: |
-          backend_pid="$(cat backend.pid)"
           for i in {1..120}; do
-            if ! kill -0 "$backend_pid" 2>/dev/null; then
-              echo "Backend process exited before becoming ready"
-              cat backend.log
-              exit 1
-            fi
             if curl -fsS http://localhost:8080/api-docs >/dev/null; then
               echo "Backend is ready"
               exit 0
             fi
-            if [ $((i % 10)) -eq 0 ]; then
-              echo "Last backend log lines:"
-              tail -n 80 backend.log || true
-            fi
-            echo "Waiting for backend... ($i/120)"
             sleep 2
           done
-          echo "Backend did not start in time"
           cat backend.log
-          exit 1
+exit 1
 
-      - name: Run Login API tests
-        if: steps.auth-postman-tests.outputs.has_tests == 'true'
+      - name: Run CFP Get By Conference tests
+        if: steps.cfp-tests.outputs.has_tests == 'true'
         run: |
           mkdir -p postman/reports
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
             -e "postman/UTH-ConfMS Local.postman_environment.json" \
-            -d "postman/login-test-data.json" \
-            --folder "Login" \
-            --env-var baseUrl="http://localhost:8080" \
-            --env-var isCollectionRun="true" \
-            --env-var jiraDomain="${{ secrets.JIRA_DOMAIN }}" \
-            --env-var jiraEmail="${{ secrets.JIRA_EMAIL }}" \
-            --env-var jiraToken="${{ secrets.JIRA_TOKEN }}" \
-            --env-var jiraProjectKey="${{ secrets.JIRA_PROJECT_KEY }}" \
-            --reporters cli,junit,htmlextra \
-            --reporter-junit-export "postman/reports/login-junit.xml" \
-            --reporter-htmlextra-export "postman/reports/login-report.html"
+            -d "postman/cfp-get-by-conference-data.json" \
+            --folder "Get CFP By Conference" \
+            --env-var baseUrl="http://localhost:8080"
 
-      - name: Run Register API tests
-        if: steps.auth-postman-tests.outputs.has_tests == 'true'
+      - name: Run CFP Create Update tests
+        if: steps.cfp-tests.outputs.has_tests == 'true'
         run: |
-          mkdir -p postman/reports
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
             -e "postman/UTH-ConfMS Local.postman_environment.json" \
-            -d "postman/register-test-data.json" \
-            --folder "Register" \
-            --env-var baseUrl="http://localhost:8080" \
-            --env-var isCollectionRun="true" \
-            --env-var jiraDomain="${{ secrets.JIRA_DOMAIN }}" \
-            --env-var jiraEmail="${{ secrets.JIRA_EMAIL }}" \
-            --env-var jiraToken="${{ secrets.JIRA_TOKEN }}" \
-            --env-var jiraProjectKey="${{ secrets.JIRA_PROJECT_KEY }}" \
-            --reporters cli,junit,htmlextra \
-            --reporter-junit-export "postman/reports/register-junit.xml" \
-            --reporter-htmlextra-export "postman/reports/register-report.html"
+            -d "postman/cfp-create-update-data.json" \
+            --folder "Create Or Update CFP" \
+            --env-var baseUrl="http://localhost:8080"
+
+      - name: Run CFP Publish tests
+        if: steps.cfp-tests.outputs.has_tests == 'true'
+        run: |
+          newman run "postman/UTH-ConfMS API.postman_collection.json" \
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -d "postman/cfp-publish-data.json" \
+            --folder "Publish CFP" \
+            --env-var baseUrl="http://localhost:8080"
+
+      - name: Run CFP Close tests
+        if: steps.cfp-tests.outputs.has_tests == 'true'
+        run: |
+          newman run "postman/UTH-ConfMS API.postman_collection.json" \
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -d "postman/cfp-close-data.json" \
+            --folder "Close CFP" \
+            --env-var baseUrl="http://localhost:8080"
 
       - name: Upload Newman reports
-        if: always() && steps.auth-postman-tests.outputs.has_tests == 'true'
+        if: always() && steps.cfp-tests.outputs.has_tests == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: postman-newman-reports
+          name: postman-cfp-reports
           path: |
             postman/reports
             backend.log
