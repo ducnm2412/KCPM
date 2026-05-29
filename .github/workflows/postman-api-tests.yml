@@ -87,7 +87,7 @@ jobs:
             sleep 2
           done
           cat backend.log
-exit 1
+          exit 1
 
       - name: Run CFP Get By Conference tests
         if: steps.cfp-tests.outputs.has_tests == 'true'
