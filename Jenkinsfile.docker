@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    parameters {
+        string(name: 'EC2_HOST', defaultValue: 'localhost', description: 'Public IP/domain or localhost when Jenkins runs on the EC2 instance')
+        string(name: 'EC2_USER', defaultValue: 'ec2-user', description: 'SSH user on EC2')
+        string(name: 'EC2_SSH_CREDENTIALS_ID', defaultValue: 'ec2-ssh-key', description: 'Jenkins SSH private key credential ID')
+        string(name: 'APP_PATH', defaultValue: '/opt/uth-confms-docker', description: 'Docker Compose deployment directory on EC2')
+    }
+
+    environment {
+        RELEASE_ARCHIVE = "uth-confms-docker-${env.BUILD_NUMBER}.tar.gz"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Package Source') {
+            steps {
+                sh '''
+                    rm -f "$RELEASE_ARCHIVE"
+                    git ls-files -z | tar --null -T - -czf "$RELEASE_ARCHIVE"
+                '''
+                archiveArtifacts artifacts: "${RELEASE_ARCHIVE}", fingerprint: true
+            }
+        }
+
+        stage('Deploy Docker To EC2') {
+            steps {
+                sshagent(credentials: [params.EC2_SSH_CREDENTIALS_ID]) {
+                    sh '''
+                        scp -o StrictHostKeyChecking=no "$RELEASE_ARCHIVE" "$EC2_USER@$EC2_HOST:/tmp/$RELEASE_ARCHIVE"
+                        ssh -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" \
+                          "APP_PATH='$APP_PATH' RELEASE_ARCHIVE='/tmp/$RELEASE_ARCHIVE' bash -s" \
+                          < deploy/ec2/deploy-docker.sh
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Docker deployment completed successfully.'
+        }
+        failure {
+            echo 'Docker deployment failed. Check the Jenkins console log.'
+        }
+    }
+}

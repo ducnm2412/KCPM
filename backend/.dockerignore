@@ -1,0 +1,10 @@
+target
+.mvn
+*.log
+logs
+uploads
+*.iml
+.idea
+.settings
+.classpath
+.project
