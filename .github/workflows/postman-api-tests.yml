@@ -17,19 +17,24 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Detect Postman tests
-        id: postman-tests
+      - name: Detect Users Postman tests
+        id: users-tests
         run: |
           if [ -f "postman/UTH-ConfMS API.postman_collection.json" ] \
-            && [ -f "postman/UTH-ConfMS Local.postman_environment.json" ]; then
+            && [ -f "postman/UTH-ConfMS Local.postman_environment.json" ] \
+            && [ -f "postman/get_me_test_data.json" ] \
+            && [ -f "postman/list_users_test_data.json" ] \
+            && [ -f "postman/search_users_test_data.json" ] \
+            && [ -f "postman/update_me_test_data.json" ] \
+            && [ -f "postman/user_by_Id_test_data.json" ]; then
             echo "has_tests=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_tests=false" >> "$GITHUB_OUTPUT"
-            echo "No Postman tests found on this branch. Skipping Newman run."
+            echo "No Users Postman tests found on this branch."
           fi
 
       - name: Set up Java 17
-        if: steps.postman-tests.outputs.has_tests == 'true'
+        if: steps.users-tests.outputs.has_tests == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -37,22 +42,22 @@ jobs:
           cache: maven
 
       - name: Set up Node.js
-        if: steps.postman-tests.outputs.has_tests == 'true'
+        if: steps.users-tests.outputs.has_tests == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Install Newman
-        if: steps.postman-tests.outputs.has_tests == 'true'
+        if: steps.users-tests.outputs.has_tests == 'true'
         run: npm install -g newman newman-reporter-htmlextra
 
       - name: Build backend
-        if: steps.postman-tests.outputs.has_tests == 'true'
+        if: steps.users-tests.outputs.has_tests == 'true'
         working-directory: backend
         run: mvn -B -DskipTests package
 
-      - name: Start backend with CI config
-        if: steps.postman-tests.outputs.has_tests == 'true'
+      - name: Start backend
+        if: steps.users-tests.outputs.has_tests == 'true'
         working-directory: backend
         run: |
           nohup java \
@@ -64,12 +69,29 @@ jobs:
             "-Dspring.datasource.driver-class-name=org.h2.Driver" \
             "-Dspring.jpa.hibernate.ddl-auto=create-drop" \
             "-Dspring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect" \
+            "-Dspring.mail.host=localhost" \
+            "-Dapp.oauth2.enabled=false" \
+            "-Dspring.security.oauth2.client.registration.google.client-id=ci-disabled" \
+            "-Dspring.security.oauth2.client.registration.google.client-secret=ci-disabled" \
+            "-Dapp.rate-limiting.enabled=true" \
+            "-Dapp.rate-limiting.use-redis=false" \
+            "-Dapp.rate-limiting.auth.max-requests=100" \
+            "-Dapp.rate-limiting.api.max-requests=1000" \
+            "-Dapp.storage.base-dir=./uploads" \
+            "-Dapp.storage.backup.enabled=false" \
+            "-Dspring.cache.type=none" \
+            "-Dspring.data.redis.host=localhost" \
+            "-Dmanagement.health.redis.enabled=false" \
+            "-Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration" \
+            "-Dspring.jpa.show-sql=false" \
+            "-Dlogging.level.org.hibernate=ERROR" \
+            "-Dlogging.level.org.springframework.data.redis=ERROR" \
             -jar target/confms-1.0.0.jar \
             > ../backend.log 2>&1 &
           echo $! > ../backend.pid
 
       - name: Wait for backend
-        if: steps.postman-tests.outputs.has_tests == 'true'
+        if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           backend_pid="$(cat backend.pid)"
           for i in {1..120}; do
@@ -92,120 +114,77 @@ jobs:
           cat backend.log
           exit 1
 
-      - name: Create reports folder
-        if: steps.postman-tests.outputs.has_tests == 'true'
-        run: mkdir -p postman/reports
-
-      # =========================
-      # LOGIN
-      # =========================
-      - name: Run Login API tests
-        if: steps.postman-tests.outputs.has_tests == 'true'
+      - name: Run Users Me tests
+        if: steps.users-tests.outputs.has_tests == 'true'
         run: |
-          newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
-            -d "postman/login-test-data.json" \
-            --folder "Login" \
-            --env-var baseUrl="http://localhost:8080" \
-            --reporters cli,junit,htmlextra \
-            --reporter-junit-export "postman/reports/login-junit.xml" \
-            --reporter-htmlextra-export "postman/reports/login-report.html"
-
-      # =========================
-      # REGISTER
-      # =========================
-      - name: Run Register API tests
-        if: steps.postman-tests.outputs.has_tests == 'true'
-        run: |
-          newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
-            -d "postman/register-test-data.json" \
-            --folder "Register" \
-            --env-var baseUrl="http://localhost:8080" \
-            --reporters cli,junit,htmlextra \
-            --reporter-junit-export "postman/reports/register-junit.xml" \
-            --reporter-htmlextra-export "postman/reports/register-report.html"
-
-      # =========================
-      # GET ME
-      # =========================
-      - name: Run Get Me API tests
-        if: steps.postman-tests.outputs.has_tests == 'true'
-        run: |
+          mkdir -p postman/reports
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
             -e "postman/UTH-ConfMS Local.postman_environment.json" \
             -d "postman/get_me_test_data.json" \
-            --folder "Get Me" \
+            --folder "Me" \
             --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
             --reporters cli,junit,htmlextra \
-            --reporter-junit-export "postman/reports/get-me-junit.xml" \
-            --reporter-htmlextra-export "postman/reports/get-me-report.html"
+            --reporter-junit-export "postman/reports/users-me-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-me-report.html"
 
-      # =========================
-      # UPDATE ME
-      # =========================
-      - name: Run Update Me API tests
-        if: steps.postman-tests.outputs.has_tests == 'true'
+      - name: Run Users Update Me tests
+        if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
             -e "postman/UTH-ConfMS Local.postman_environment.json" \
             -d "postman/update_me_test_data.json" \
             --folder "Update Me" \
             --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
             --reporters cli,junit,htmlextra \
-            --reporter-junit-export "postman/reports/update-me-junit.xml" \
-            --reporter-htmlextra-export "postman/reports/update-me-report.html"
+            --reporter-junit-export "postman/reports/users-update-me-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-update-me-report.html"
 
-      # =========================
-      # GET USER BY ID
-      # =========================
-      - name: Run Get User By ID API tests
-        if: steps.postman-tests.outputs.has_tests == 'true'
+      - name: Run Users Get By ID tests
+        if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
             -e "postman/UTH-ConfMS Local.postman_environment.json" \
-            -d "postman/user_by_id_test_data.json" \
+            -d "postman/user_by_Id_test_data.json" \
             --folder "Get User By ID" \
             --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
             --reporters cli,junit,htmlextra \
-            --reporter-junit-export "postman/reports/user-by-id-junit.xml" \
-            --reporter-htmlextra-export "postman/reports/user-by-id-report.html"
+            --reporter-junit-export "postman/reports/users-get-by-id-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-get-by-id-report.html"
 
-      # =========================
-      # LIST USERS
-      # =========================
-      - name: Run List Users API tests
-        if: steps.postman-tests.outputs.has_tests == 'true'
+      - name: Run Users List tests
+        if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
             -e "postman/UTH-ConfMS Local.postman_environment.json" \
             -d "postman/list_users_test_data.json" \
             --folder "List Users" \
             --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
             --reporters cli,junit,htmlextra \
-            --reporter-junit-export "postman/reports/list-users-junit.xml" \
-            --reporter-htmlextra-export "postman/reports/list-users-report.html"
+            --reporter-junit-export "postman/reports/users-list-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-list-report.html"
 
-      # =========================
-      # SEARCH USERS
-      # =========================
-      - name: Run Search Users API tests
-        if: steps.postman-tests.outputs.has_tests == 'true'
+      - name: Run Users Search tests
+        if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
             -e "postman/UTH-ConfMS Local.postman_environment.json" \
             -d "postman/search_users_test_data.json" \
             --folder "Search Users" \
             --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
             --reporters cli,junit,htmlextra \
-            --reporter-junit-export "postman/reports/search-users-junit.xml" \
-            --reporter-htmlextra-export "postman/reports/search-users-report.html"
+            --reporter-junit-export "postman/reports/users-search-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-search-report.html"
 
       - name: Upload Newman reports
-        if: always() && steps.postman-tests.outputs.has_tests == 'true'
+        if: always() && steps.users-tests.outputs.has_tests == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: postman-newman-reports
+          name: postman-users-reports
           path: |
             postman/reports
             backend.log
