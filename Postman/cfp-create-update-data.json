@@ -1,0 +1,90 @@
+[
+  {
+    "test_case": "create_cfp_success",
+    "conferenceId": 1,
+    "callForPapers": "Submit original research papers.",
+    "topics": "Software Engineering, Testing, AI",
+    "submissionGuidelines": "Upload a PDF following the conference template.",
+    "open": true,
+    "expected_status": 201,
+    "expected_success": true,
+    "expected_message": "Call for papers created successfully"
+  },
+  {
+    "test_case": "missing_conference_id",
+    "conferenceId": "",
+    "callForPapers": "Submit original research papers.",
+    "topics": "Software Engineering, Testing, AI",
+    "submissionGuidelines": "Upload a PDF following the conference template.",
+    "open": true,
+    "expected_status": 400,
+    "expected_success": false,
+    "expected_message": "Validation failed"
+  },
+  {
+    "test_case": "invalid_conference_id",
+    "conferenceId": 99999,
+    "callForPapers": "Submit original research papers.",
+    "topics": "Software Engineering, Testing, AI",
+    "submissionGuidelines": "Upload a PDF following the conference template.",
+    "open": true,
+    "expected_status": 404,
+    "expected_success": false,
+    "expected_message": "Conference not found"
+  },
+  {
+    "test_case": "missing_call_for_papers",
+    "conferenceId": 1,
+    "callForPapers": "",
+    "topics": "Software Engineering, Testing, AI",
+    "submissionGuidelines": "Upload a PDF following the conference template.",
+    "open": true,
+    "expected_status": 400,
+    "expected_success": false,
+    "expected_message": "Validation failed"
+  },
+  {
+    "test_case": "missing_topics",
+    "conferenceId": 1,
+    "callForPapers": "Submit original research papers.",
+    "topics": "",
+    "submissionGuidelines": "Upload a PDF following the conference template.",
+    "open": true,
+    "expected_status": 400,
+    "expected_success": false,
+    "expected_message": "Validation failed"
+  },
+  {
+    "test_case": "missing_submission_guidelines",
+    "conferenceId": 1,
+    "callForPapers": "Submit original research papers.",
+    "topics": "Software Engineering, Testing, AI",
+    "submissionGuidelines": "",
+    "open": true,
+    "expected_status": 400,
+    "expected_success": false,
+    "expected_message": "Validation failed"
+  },
+  {
+    "test_case": "missing_open_status",
+    "conferenceId": 1,
+    "callForPapers": "Submit original research papers.",
+    "topics": "Software Engineering, Testing, AI",
+    "submissionGuidelines": "Upload a PDF following the conference template.",
+    "open": "",
+    "expected_status": 400,
+    "expected_success": false,
+    "expected_message": "Validation failed"
+  },
+  {
+    "test_case": "invalid_open_type",
+    "conferenceId": 1,
+    "callForPapers": "Submit original research papers.",
+    "topics": "Software Engineering, Testing, AI",
+    "submissionGuidelines": "Upload a PDF following the conference template.",
+    "open": "yes",
+    "expected_status": 400,
+    "expected_success": false,
+    "expected_message": "Validation failed"
+  }
+]
