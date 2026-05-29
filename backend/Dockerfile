@@ -13,6 +13,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 RUN addgroup -S app && adduser -S app -G app
+RUN mkdir -p /app/logs && chown -R app:app /app
 
 COPY --from=build /workspace/target/confms-1.0.0.jar /app/app.jar
 
