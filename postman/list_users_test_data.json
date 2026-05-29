@@ -1,0 +1,16 @@
+[
+  {
+    "test_case": "TC_018",
+    "description": "Get list users thành công",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJzdWIiOiJhZG1pbkB1dGguZWR1LnZuIiwiaWF0IjoxNzgwMDQ0OTczLCJleHAiOjE3ODAwNDg1NzN9.KwreIsd9KwNIzCL2rFN6C3MAO0Xqcu9670KWUg2sraI",
+    "expected_status": 200,
+    "expected_success": true
+  },
+  {
+    "test_case": "TC_019",
+    "description": "Không gửi token",
+    "token": "",
+    "expected_status": 401,
+    "expected_success": false
+  }
+]
