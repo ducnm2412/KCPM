@@ -15,8 +15,8 @@ pipeline {
     }
 
     environment {
-        JAVA_HOME = '/usr/lib/jvm/java-17-openjdk-amd64'
-        PATH+JAVA = "${JAVA_HOME}/bin"
+        MAVEN_OPTS = '-Xms256m -Xmx1024m'
+        SONAR_SCANNER_JAVA_OPTS = '-Xms256m -Xmx1024m'
         RELEASE_ARCHIVE = "uth-confms-docker-${env.BUILD_NUMBER}.tar.gz"
     }
 
@@ -32,7 +32,7 @@ pipeline {
                 withSonarQubeEnv('uth-confms-sonar') {
                     dir('backend') {
                         sh '''
-                            mvn -B verify sonar:sonar \
+                            mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar \
                               -Dsonar.projectKey=uth-confms \
                               -Dsonar.projectName=uth-confms
                         '''
