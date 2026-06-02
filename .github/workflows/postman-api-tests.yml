@@ -100,6 +100,48 @@ jobs:
             --env-var password="admin123" \
             --export-environment "postman/ci-environment.json"
 
+      - name: Seed CFP test data
+        if: steps.cfp-tests.outputs.has_tests == 'true'
+        run: |
+          ACCESS_TOKEN=$(node -e "
+          const fs = require('fs');
+          const env = JSON.parse(fs.readFileSync('postman/ci-environment.json', 'utf8'));
+          const token = env.values.find(v => v.key === 'accessToken')?.value;
+          if (!token) process.exit(1);
+          console.log(token);
+          ")
+
+          curl -fsS -X POST "http://localhost:8080/api/conferences" \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "CFP Test Conference 1",
+              "acronym": "CFPTEST1",
+              "description": "Conference used for CFP success test",
+              "reviewMode": "DOUBLE_BLIND"
+            }'
+
+          curl -fsS -X POST "http://localhost:8080/api/conferences" \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "CFP Test Conference 2",
+              "acronym": "CFPTEST2",
+              "description": "Conference without CFP",
+              "reviewMode": "DOUBLE_BLIND"
+            }'
+
+          curl -fsS -X POST "http://localhost:8080/api/cfp" \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "conferenceId": 1,
+              "callForPapers": "Submit original research papers.",
+              "topics": "Software Engineering, Testing, AI",
+              "submissionGuidelines": "Upload a PDF following the conference template.",
+              "open": true
+            }'
+
       - name: Run CFP Get By Conference tests
         if: steps.cfp-tests.outputs.has_tests == 'true'
         run: |
