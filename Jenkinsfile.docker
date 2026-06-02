@@ -25,6 +25,20 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('uth-confms-sonar') {
+                    dir('backend') {
+                        sh '''
+                            mvn -B verify sonar:sonar \
+                              -Dsonar.projectKey=uth-confms \
+                              -Dsonar.projectName=uth-confms
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Package Source') {
             steps {
                 sh '''
