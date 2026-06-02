@@ -89,12 +89,23 @@ jobs:
           cat backend.log
           exit 1
 
+      - name: Login and export Postman environment
+        if: steps.cfp-tests.outputs.has_tests == 'true'
+        run: |
+          newman run "postman/UTH-ConfMS API.postman_collection.json" \
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            --folder "Login" \
+            --env-var baseUrl="http://localhost:8080" \
+            --env-var email="admin@uth.edu.vn" \
+            --env-var password="admin123" \
+            --export-environment "postman/ci-environment.json"
+
       - name: Run CFP Get By Conference tests
         if: steps.cfp-tests.outputs.has_tests == 'true'
         run: |
           mkdir -p postman/reports
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -e "postman/ci-environment.json" \
             -d "postman/cfp-get-by-conference-data.json" \
             --folder "Get CFP By Conference" \
             --env-var baseUrl="http://localhost:8080"
@@ -103,7 +114,7 @@ jobs:
         if: steps.cfp-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -e "postman/ci-environment.json" \
             -d "postman/cfp-create-update-data.json" \
             --folder "Create Or Update CFP" \
             --env-var baseUrl="http://localhost:8080"
@@ -112,7 +123,7 @@ jobs:
         if: steps.cfp-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -e "postman/ci-environment.json" \
             -d "postman/cfp-publish-data.json" \
             --folder "Publish CFP" \
             --env-var baseUrl="http://localhost:8080"
@@ -121,7 +132,7 @@ jobs:
         if: steps.cfp-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -e "postman/ci-environment.json" \
             -d "postman/cfp-close-data.json" \
             --folder "Close CFP" \
             --env-var baseUrl="http://localhost:8080"
