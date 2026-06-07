@@ -73,7 +73,13 @@ public class GlobalExceptionHandler {
   // Xử lý lỗi từ chối truy cập (Access Denied)
   public ResponseEntity<ApiResponse<Object>> handleAccessDeniedException(AccessDeniedException e) {
     log.warn("Access denied: {}", e.getMessage());
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Access denied"));
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<ApiResponse<Object>> handleForbiddenException(ForbiddenException e) {
+    log.warn("Forbidden: {}", e.getMessage());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
   }
 
   @ExceptionHandler(JwtException.class)

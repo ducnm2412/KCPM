@@ -4,6 +4,7 @@ import com.uth.confms.assignment.entity.Assignment;
 import com.uth.confms.assignment.repository.AssignmentRepository;
 import com.uth.confms.auth.service.UserService;
 import com.uth.confms.common.exception.BusinessException;
+import com.uth.confms.common.exception.ForbiddenException;
 import com.uth.confms.common.exception.NotFoundException;
 import com.uth.confms.common.exception.UnauthorizedException;
 import com.uth.confms.conference.entity.Deadline;
@@ -745,7 +746,7 @@ public class SubmissionService {
     }
 
     logger.warn("DEBUG: Access DENIED for userId: {} on submissionId: {}", userId, submission.getId());
-    throw new UnauthorizedException("You do not have permission to access these resources");
+    throw new ForbiddenException("You do not have permission to access these resources");
   }
 
   /**
