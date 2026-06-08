@@ -1,5 +1,8 @@
 package com.uth.confms.conference.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 
 public class ConferenceUpdateDTO {
@@ -7,11 +10,15 @@ public class ConferenceUpdateDTO {
   private String acronym; // Tên viết tắt
   private String description; // Mô tả
   private Boolean published; // Trạng thái công khai
+  @Pattern(
+      regexp = "SINGLE_BLIND|DOUBLE_BLIND",
+      message = "Review mode must be SINGLE_BLIND or DOUBLE_BLIND")
   private String reviewMode; // Chế độ review (SINGLE_BLIND, DOUBLE_BLIND)
-  private List<TopicDTO> topics; // Danh sách chủ đề
-  private List<Long> keywordIds; // Danh sách ID từ khóa
-  private List<TrackDTO> tracks; // Danh sách tracks
-  private List<DeadlineDTO> deadlines; // Danh sách deadlines
+
+  private List<@Valid TopicDTO> topics; // Danh sách chủ đề
+  private List<@Positive Long> keywordIds; // Danh sách ID từ khóa
+  private List<@Valid TrackDTO> tracks; // Danh sách tracks
+  private List<@Valid DeadlineDTO> deadlines; // Danh sách deadlines
 
   public String getName() {
     return name;
