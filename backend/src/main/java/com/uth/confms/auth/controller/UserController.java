@@ -66,7 +66,7 @@ public class UserController {
   @PutMapping("/me")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<UserDTO>> updateCurrentUser(
-      Authentication authentication, @RequestBody UserDTO userDTO) {
+      Authentication authentication, @jakarta.validation.Valid @RequestBody UserDTO userDTO) {
     Long userId = getUserIdFromAuthentication(authentication);
     UserDTO updated = userService.updateUser(userId, userDTO);
     return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", updated));

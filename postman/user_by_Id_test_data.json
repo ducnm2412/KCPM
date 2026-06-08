@@ -1,0 +1,42 @@
+[
+  {
+    "test_case": "TC_013",
+    "description": "Get user by ID thành công",
+    "userId": "2",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJzdWIiOiJhZG1pbkB1dGguZWR1LnZuIiwiaWF0IjoxNzgwMDQ0OTczLCJleHAiOjE3ODAwNDg1NzN9.KwreIsd9KwNIzCL2rFN6C3MAO0Xqcu9670KWUg2sraI",
+    "expected_status": 200,
+    "expected_success": true
+  },
+  {
+    "test_case": "TC_014",
+    "description": "Không gửi token",
+    "userId": "2",
+    "token": "",
+    "expected_status": 401,
+    "expected_success": false
+  },
+  {
+    "test_case": "TC_015",
+    "description": "User ID không tồn tại",
+    "userId": "99999",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJzdWIiOiJhZG1pbkB1dGguZWR1LnZuIiwiaWF0IjoxNzgwMDQ0OTczLCJleHAiOjE3ODAwNDg1NzN9.KwreIsd9KwNIzCL2rFN6C3MAO0Xqcu9670KWUg2sraI",
+    "expected_status": 404,
+    "expected_success": false
+  },
+  {
+    "test_case": "TC_016",
+    "description": "User ID sai format",
+    "userId": "abc",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJzdWIiOiJhZG1pbkB1dGguZWR1LnZuIiwiaWF0IjoxNzgwMDQ0OTczLCJleHAiOjE3ODAwNDg1NzN9.KwreIsd9KwNIzCL2rFN6C3MAO0Xqcu9670KWUg2sraI",
+    "expected_status": 400,
+    "expected_success": false
+  },
+  {
+    "test_case": "TC_017",
+    "description": "Admin truy cập user khác",
+    "userId": "3",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJzdWIiOiJhZG1pbkB1dGguZWR1LnZuIiwiaWF0IjoxNzgwMDQ0OTczLCJleHAiOjE3ODAwNDg1NzN9.KwreIsd9KwNIzCL2rFN6C3MAO0Xqcu9670KWUg2sraI",
+    "expected_status": 200,
+    "expected_success": true
+  }
+]

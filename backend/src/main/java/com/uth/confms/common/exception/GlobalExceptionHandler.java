@@ -73,7 +73,13 @@ public class GlobalExceptionHandler {
   // Xử lý lỗi từ chối truy cập (Access Denied)
   public ResponseEntity<ApiResponse<Object>> handleAccessDeniedException(AccessDeniedException e) {
     log.warn("Access denied: {}", e.getMessage());
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Access denied"));
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<ApiResponse<Object>> handleForbiddenException(ForbiddenException e) {
+    log.warn("Forbidden: {}", e.getMessage());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
   }
 
   @ExceptionHandler(JwtException.class)
@@ -128,5 +134,19 @@ public class GlobalExceptionHandler {
     }
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ApiResponse.error(errorMessage));
+  }
+
+  @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+  public ResponseEntity<ApiResponse<Object>> handleResponseStatusException(org.springframework.web.server.ResponseStatusException e) {
+    log.warn("Response status exception: {}", e.getReason());
+    return ResponseEntity.status(e.getStatusCode()).body(ApiResponse.error(e.getReason()));
+  }
+
+  @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+  // Xử lý lỗi sai định dạng kiểu dữ liệu trên URL (VD: truyền "abc" vào tham số kiểu Long)
+  public ResponseEntity<ApiResponse<Object>> handleTypeMismatchException(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException e) {
+    log.warn("Type mismatch error: {}", e.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("Invalid input format for parameter: " + e.getName()));
   }
 }

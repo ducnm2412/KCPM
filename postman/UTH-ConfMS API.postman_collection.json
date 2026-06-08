@@ -1,0 +1,822 @@
+{
+  "info": {
+    "_postman_id": "163d5938-078a-4e6a-96d2-uth-confms-api",
+    "name": "UTH-ConfMS API",
+    "description": "Postman collection for UTH-ConfMS Spring Boot backend. Select the `UTH-ConfMS Local` environment, run Auth > Login first, then call protected APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+    ]
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Status is not 5xx', function () {",
+          "  pm.expect(pm.response.code).to.be.below(500);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const isCollectionRun = String(pm.environment.get('isCollectionRun')).trim().toLowerCase() === 'true';",
+                  "const testCase = pm.iterationData.get('test_case') || 'register';",
+                  "let json = {};",
+                  "let isBug = false;",
+                  "let bugReason = '';",
+                  "try { json = pm.response.json(); } catch (e) { isBug = true; bugReason += '\\n- Response is not JSON'; }",
+                  "const responseData = json.data || json;",
+                  "if (responseData.accessToken) pm.environment.set('accessToken', responseData.accessToken);",
+                  "if (responseData.refreshToken) pm.environment.set('refreshToken', responseData.refreshToken);",
+                  "if (responseData.userId) pm.environment.set('userId', responseData.userId);",
+                  "const expectedStatus = pm.iterationData.get('expected_status');",
+                  "const expectedSuccess = pm.iterationData.get('expected_success');",
+                  "const expectedMessage = pm.iterationData.get('expected_message');",
+                  "const expectedSuccessBool = String(expectedSuccess).trim().toLowerCase() === 'true';",
+                  "const rawRequestBody = pm.request.body && pm.request.body.raw ? pm.request.body.raw : 'No request body';",
+                  "const resolvedRequestBody = pm.variables.replaceIn(rawRequestBody);",
+                  "console.log('===== REGISTER TEST DETAIL =====');",
+                  "console.log('Test case:', testCase);",
+                  "console.log('Request Body:', resolvedRequestBody);",
+                  "console.log('Expected Result:', JSON.stringify({ statusCode: Number(expectedStatus), success: expectedSuccessBool, message: expectedMessage }, null, 2));",
+                  "console.log('Actual Result:', JSON.stringify({ statusCode: pm.response.code, success: json.success, message: json.message, responseBody: json }, null, 2));",
+                  "console.log('================================');",
+                  "if (expectedStatus !== undefined) {",
+                  "  pm.test('[' + testCase + '] status code dung', function () { pm.expect(pm.response.code).to.eql(Number(expectedStatus)); });",
+                  "  if (pm.response.code !== Number(expectedStatus)) { isBug = true; bugReason += '\\n- Expected status: ' + expectedStatus + ', Actual status: ' + pm.response.code; }",
+                  "} else {",
+                  "  pm.test('Register returns success response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "}",
+                  "if (expectedSuccess !== undefined) {",
+                  "  pm.test('[' + testCase + '] success dung', function () { pm.expect(json.success).to.eql(expectedSuccessBool); });",
+                  "  if (json.success !== expectedSuccessBool) { isBug = true; bugReason += '\\n- Expected success: ' + expectedSuccessBool + ', Actual success: ' + json.success; }",
+                  "}",
+                  "if (expectedMessage !== undefined) {",
+                  "  pm.test('[' + testCase + '] message dung', function () { pm.expect(json.message).to.eql(expectedMessage); });",
+                  "  if (json.message !== expectedMessage) { isBug = true; bugReason += '\\n- Expected message: ' + expectedMessage + ', Actual message: ' + json.message; }",
+                  "}",
+                  "if (!isCollectionRun || !isBug) {",
+                  "  console.log(!isCollectionRun ? 'Manual send or Jira disabled' : 'Test passed - no Jira issue created');",
+                  "  return;",
+                  "}",
+                  "const jiraDomain = pm.environment.get('jiraDomain');",
+                  "const jiraEmail = pm.environment.get('jiraEmail');",
+                  "const jiraToken = pm.environment.get('jiraToken');",
+                  "const jiraProjectKey = pm.environment.get('jiraProjectKey');",
+                  "if (!jiraDomain || !jiraEmail || !jiraToken || !jiraProjectKey) {",
+                  "  console.log('Missing Jira environment variables - skip issue creation');",
+                  "  return;",
+                  "}",
+                  "const location = pm.execution.location || [];",
+                  "const folderName = location.length >= 2 ? location[1] : 'Auth';",
+                  "const descriptionText = 'Folder: ' + folderName + '\\n\\nRequest: ' + pm.info.requestName + '\\n\\nTest case: ' + testCase + '\\n\\nMethod: ' + pm.request.method + '\\n\\nEndpoint:\\n' + pm.request.url + '\\n\\n-----------------------------------\\n\\nRequest Body:\\n' + resolvedRequestBody + '\\n\\n-----------------------------------\\n\\nExpected Result:\\nStatus Code: ' + expectedStatus + '\\nSuccess: ' + expectedSuccessBool + '\\nMessage: ' + expectedMessage + '\\n\\n-----------------------------------\\n\\nActual Result:\\nStatus Code: ' + pm.response.code + '\\nSuccess: ' + json.success + '\\nMessage: ' + json.message + '\\n\\nResponse Body:\\n' + pm.response.text() + '\\n\\n-----------------------------------\\n\\nBug Reason:' + bugReason + '\\n\\nDetected automatically from Postman/Newman.';",
+                  "pm.sendRequest({",
+                  "  url: 'https://' + jiraDomain + '/rest/api/3/issue',",
+                  "  method: 'POST',",
+                  "  header: {",
+                  "    'Content-Type': 'application/json',",
+                  "    'Accept': 'application/json',",
+                  "    'Authorization': 'Basic ' + btoa(jiraEmail + ':' + jiraToken)",
+                  "  },",
+                  "  body: {",
+                  "    mode: 'raw',",
+                  "    raw: JSON.stringify({",
+                  "      fields: {",
+                  "        project: { key: jiraProjectKey },",
+                  "        summary: '[' + folderName + '] ' + pm.info.requestName + ' failed - ' + testCase,",
+                  "        description: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: descriptionText }] }] },",
+                  "        issuetype: { name: 'Task' }",
+                  "      }",
+                  "    })",
+                  "  }",
+                  "}, function (err, res) {",
+                  "  if (err) { console.log('Jira Error:', err); return; }",
+                  "  console.log('Jira status:', res.code);",
+                  "  console.log('Jira response:', res.text());",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"firstName\": \"{{firstName}}\",\n  \"lastName\": \"{{lastName}}\",\n  \"organizationId\": {{organizationId}},\n  \"phone\": \"{{phone}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const isCollectionRun = String(pm.environment.get('isCollectionRun')).trim().toLowerCase() === 'true';",
+                  "const testCase = pm.iterationData.get('test_case') || 'login';",
+                  "let json = {};",
+                  "let isBug = false;",
+                  "let bugReason = '';",
+                  "try { json = pm.response.json(); } catch (e) { isBug = true; bugReason += '\\n- Response is not JSON'; }",
+                  "const loginResponseData = json.data || json;",
+                  "if (loginResponseData.accessToken) pm.environment.set('accessToken', loginResponseData.accessToken);",
+                  "if (loginResponseData.refreshToken) pm.environment.set('refreshToken', loginResponseData.refreshToken);",
+                  "if (loginResponseData.userId) pm.environment.set('userId', loginResponseData.userId);",
+                  "const expectedStatus = pm.iterationData.get('expected_status');",
+                  "const expectedSuccess = pm.iterationData.get('expected_success');",
+                  "const expectedMessage = pm.iterationData.get('expected_message');",
+                  "const expectedSuccessBool = String(expectedSuccess).trim().toLowerCase() === 'true';",
+                  "const rawRequestBody = pm.request.body && pm.request.body.raw ? pm.request.body.raw : 'No request body';",
+                  "const resolvedRequestBody = pm.variables.replaceIn(rawRequestBody);",
+                  "console.log('===== LOGIN TEST DETAIL =====');",
+                  "console.log('Test case:', testCase);",
+                  "console.log('Request Body:', resolvedRequestBody);",
+                  "console.log('Expected Result:', JSON.stringify({ statusCode: Number(expectedStatus), success: expectedSuccessBool, message: expectedMessage }, null, 2));",
+                  "console.log('Actual Result:', JSON.stringify({ statusCode: pm.response.code, success: json.success, message: json.message, responseBody: json }, null, 2));",
+                  "console.log('=============================');",
+                  "if (expectedStatus !== undefined) {",
+                  "  pm.test('[' + testCase + '] status code dung', function () { pm.expect(pm.response.code).to.eql(Number(expectedStatus)); });",
+                  "  if (pm.response.code !== Number(expectedStatus)) { isBug = true; bugReason += '\\n- Expected status: ' + expectedStatus + ', Actual status: ' + pm.response.code; }",
+                  "} else {",
+                  "  pm.test('Login returns success response', function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "}",
+                  "if (expectedSuccess !== undefined) {",
+                  "  pm.test('[' + testCase + '] success dung', function () { pm.expect(json.success).to.eql(expectedSuccessBool); });",
+                  "  if (json.success !== expectedSuccessBool) { isBug = true; bugReason += '\\n- Expected success: ' + expectedSuccessBool + ', Actual success: ' + json.success; }",
+                  "}",
+                  "if (expectedMessage !== undefined) {",
+                  "  pm.test('[' + testCase + '] message dung', function () { pm.expect(json.message).to.eql(expectedMessage); });",
+                  "  if (json.message !== expectedMessage) { isBug = true; bugReason += '\\n- Expected message: ' + expectedMessage + ', Actual message: ' + json.message; }",
+                  "}",
+                  "if (expectedSuccessBool) {",
+                  "  pm.test('[' + testCase + '] co access token', function () { pm.expect(loginResponseData.accessToken).to.exist; });",
+                  "  if (!loginResponseData.accessToken) { isBug = true; bugReason += '\\n- Expected accessToken but actual is missing'; }",
+                  "}",
+                  "if (!isCollectionRun || !isBug) {",
+                  "  console.log(!isCollectionRun ? 'Manual send or Jira disabled' : 'Test passed - no Jira issue created');",
+                  "  return;",
+                  "}",
+                  "const jiraDomain = pm.environment.get('jiraDomain');",
+                  "const jiraEmail = pm.environment.get('jiraEmail');",
+                  "const jiraToken = pm.environment.get('jiraToken');",
+                  "const jiraProjectKey = pm.environment.get('jiraProjectKey');",
+                  "if (!jiraDomain || !jiraEmail || !jiraToken || !jiraProjectKey) {",
+                  "  console.log('Missing Jira environment variables - skip issue creation');",
+                  "  return;",
+                  "}",
+                  "const location = pm.execution.location || [];",
+                  "const folderName = location.length >= 2 ? location[1] : 'Auth';",
+                  "const descriptionText = 'Folder: ' + folderName + '\\n\\nRequest: ' + pm.info.requestName + '\\n\\nTest case: ' + testCase + '\\n\\nMethod: ' + pm.request.method + '\\n\\nEndpoint:\\n' + pm.request.url + '\\n\\n-----------------------------------\\n\\nRequest Body:\\n' + resolvedRequestBody + '\\n\\n-----------------------------------\\n\\nExpected Result:\\nStatus Code: ' + expectedStatus + '\\nSuccess: ' + expectedSuccessBool + '\\nMessage: ' + expectedMessage + '\\n\\n-----------------------------------\\n\\nActual Result:\\nStatus Code: ' + pm.response.code + '\\nSuccess: ' + json.success + '\\nMessage: ' + json.message + '\\n\\nResponse Body:\\n' + pm.response.text() + '\\n\\n-----------------------------------\\n\\nBug Reason:' + bugReason + '\\n\\nDetected automatically from Postman/Newman.';",
+                  "pm.sendRequest({",
+                  "  url: 'https://' + jiraDomain + '/rest/api/3/issue',",
+                  "  method: 'POST',",
+                  "  header: {",
+                  "    'Content-Type': 'application/json',",
+                  "    'Accept': 'application/json',",
+                  "    'Authorization': 'Basic ' + btoa(jiraEmail + ':' + jiraToken)",
+                  "  },",
+                  "  body: {",
+                  "    mode: 'raw',",
+                  "    raw: JSON.stringify({",
+                  "      fields: {",
+                  "        project: { key: jiraProjectKey },",
+                  "        summary: '[' + folderName + '] ' + pm.info.requestName + ' failed - ' + testCase,",
+                  "        description: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: descriptionText }] }] },",
+                  "        issuetype: { name: 'Task' }",
+                  "      }",
+                  "    })",
+                  "  }",
+                  "}, function (err, res) {",
+                  "  if (err) { console.log('Jira Error:', err); return; }",
+                  "  console.log('Jira status:', res.code);",
+                  "  console.log('Jira response:', res.text());",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const data = json.data || json;",
+                  "if (data.accessToken) pm.environment.set('accessToken', data.accessToken);",
+                  "pm.test('Refresh returns access token', function () { pm.expect(data.accessToken).to.exist; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{refreshToken}}" }],
+            "url": "{{baseUrl}}/api/auth/refresh"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/logout"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"{{password}}\",\n  \"newPassword\": \"Password123!\"\n}" },
+            "url": "{{baseUrl}}/api/auth/change-password"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/forgot-password"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"Password123!\"\n}" },
+            "url": "{{baseUrl}}/api/auth/reset-password"
+          }
+        },
+        {
+          "name": "SSO Redirect URL",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/sso/redirect"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Organizations",
+      "item": [
+        {
+          "name": "List Organizations",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/organizations"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        { "name": "Me", "request": { "method": "GET", "url": "{{baseUrl}}/api/users/me" } },
+        {
+          "name": "Update Me",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"phone\": \"0900000000\",\n  \"organizationId\": {{organizationId}}\n}" },
+            "url": "{{baseUrl}}/api/users/me"
+          }
+        },
+        { "name": "Get User By ID", "request": { "method": "GET", "url": "{{baseUrl}}/api/users/{{userId}}" } },
+        { "name": "List Users", "request": { "method": "GET", "url": "{{baseUrl}}/api/users?page=0&size=20" } },
+        { "name": "List Active Users", "request": { "method": "GET", "url": "{{baseUrl}}/api/users/active/list?page=0&size=20" } },
+        { "name": "Search Users", "request": { "method": "GET", "url": "{{baseUrl}}/api/users/search?keyword=test&page=0&size=20" } },
+        { "name": "User Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/users/stats/summary" } },
+        {
+          "name": "Update User Roles",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "[\n  \"ROLE_AUTHOR\"\n]" },
+            "url": "{{baseUrl}}/api/users/{{userId}}/roles"
+          }
+        },
+        { "name": "Deactivate User", "request": { "method": "PUT", "url": "{{baseUrl}}/api/users/{{userId}}/deactivate" } },
+        { "name": "Activate User", "request": { "method": "PUT", "url": "{{baseUrl}}/api/users/{{userId}}/activate" } }
+      ]
+    },
+    {
+      "name": "Conferences",
+      "item": [
+        { "name": "Public Conferences", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": "{{baseUrl}}/api/conferences/public" } },
+        { "name": "My Conferences", "request": { "method": "GET", "url": "{{baseUrl}}/api/conferences/my" } },
+        { "name": "Get Conference", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": "{{baseUrl}}/api/conferences/{{conferenceId}}" } },
+        {
+          "name": "Create Conference",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"International Conference on Software Engineering 2026\",\n  \"acronym\": \"ICSE-TEST\",\n  \"description\": \"Conference created from Postman\",\n  \"reviewMode\": \"DOUBLE_BLIND\",\n  \"topics\": [\n    { \"name\": \"Software Testing\", \"description\": \"Testing and quality assurance\" }\n  ],\n  \"tracks\": [\n    { \"name\": \"Research Track\", \"description\": \"Full research papers\", \"active\": true }\n  ],\n  \"deadlines\": [\n    { \"type\": \"SUBMISSION\", \"dueDate\": \"2026-12-31T23:59:00\", \"description\": \"Submission deadline\", \"hardDeadline\": true }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/conferences"
+          }
+        },
+        {
+          "name": "Update Conference",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Conference Name\",\n  \"description\": \"Updated from Postman\",\n  \"published\": true\n}" },
+            "url": "{{baseUrl}}/api/conferences/{{conferenceId}}"
+          }
+        },
+        { "name": "Delete Conference", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/conferences/{{conferenceId}}" } }
+      ]
+    },
+    {
+      "name": "CFP",
+      "item": [
+        { "name": "Get CFP By Conference", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": "{{baseUrl}}/api/cfp/conference/{{conferenceId}}" } },
+        {
+          "name": "Create Or Update CFP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"callForPapers\": \"Submit original research papers.\",\n  \"topics\": \"Software Engineering, Testing, AI\",\n  \"submissionGuidelines\": \"Upload a PDF following the conference template.\",\n  \"open\": true\n}" },
+            "url": "{{baseUrl}}/api/cfp"
+          }
+        },
+        { "name": "Publish CFP", "request": { "method": "POST", "url": "{{baseUrl}}/api/cfp/{{conferenceId}}/publish" } },
+        { "name": "Close CFP", "request": { "method": "POST", "url": "{{baseUrl}}/api/cfp/{{conferenceId}}/close" } }
+      ]
+    },
+    {
+      "name": "Submissions",
+      "item": [
+        { "name": "My Submissions", "request": { "method": "GET", "url": "{{baseUrl}}/api/submissions/my" } },
+        { "name": "Get Submission", "request": { "method": "GET", "url": "{{baseUrl}}/api/submissions/{{submissionId}}" } },
+        {
+          "name": "Create Submission",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const json = pm.response.json();", "const data = json.data || json;", "if (data.id) pm.environment.set('submissionId', data.id);"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"title\": \"A Postman Test Submission\",\n  \"abstractText\": \"This abstract is used for API testing.\",\n  \"keywords\": \"api, testing, postman\",\n  \"authors\": [\n    {\n      \"firstName\": \"Test\",\n      \"lastName\": \"Author\",\n      \"email\": \"author@example.com\",\n      \"affiliation\": \"UTH\",\n      \"isCorresponding\": true,\n      \"orderIndex\": 1\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/submissions"
+          }
+        },
+        {
+          "name": "Update Submission",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated Postman Test Submission\",\n  \"abstractText\": \"Updated abstract from Postman.\",\n  \"keywords\": \"api, updated\"\n}" },
+            "url": "{{baseUrl}}/api/submissions/{{submissionId}}"
+          }
+        },
+        { "name": "Submit Submission", "request": { "method": "POST", "url": "{{baseUrl}}/api/submissions/{{submissionId}}/submit" } },
+        { "name": "Withdraw Submission", "request": { "method": "POST", "url": "{{baseUrl}}/api/submissions/{{submissionId}}/withdraw" } },
+        {
+          "name": "Upload PDF",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": [] }] },
+            "url": "{{baseUrl}}/api/submissions/{{submissionId}}/upload-pdf"
+          }
+        },
+        { "name": "Download Current File", "request": { "method": "GET", "url": "{{baseUrl}}/api/submissions/{{submissionId}}/file" } },
+        { "name": "List File Versions", "request": { "method": "GET", "url": "{{baseUrl}}/api/submissions/{{submissionId}}/files" } },
+        { "name": "Download File Version", "request": { "method": "GET", "url": "{{baseUrl}}/api/submissions/{{submissionId}}/files/{{fileId}}" } },
+        { "name": "Submissions By Conference", "request": { "method": "GET", "url": "{{baseUrl}}/api/submissions/conference/{{conferenceId}}" } },
+        { "name": "Delete Submission", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/submissions/{{submissionId}}" } }
+      ]
+    },
+    {
+      "name": "Assignments",
+      "item": [
+        {
+          "name": "Create Assignment",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const json = pm.response.json();", "const data = json.data || json;", "if (data.id) pm.environment.set('assignmentId', data.id);"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"submissionId\": {{submissionId}},\n  \"reviewerId\": {{reviewerId}},\n  \"isPrimary\": true\n}" },
+            "url": "{{baseUrl}}/api/assignments"
+          }
+        },
+        { "name": "Accept Assignment", "request": { "method": "POST", "url": "{{baseUrl}}/api/assignments/{{assignmentId}}/accept" } },
+        { "name": "Decline Assignment", "request": { "method": "POST", "url": "{{baseUrl}}/api/assignments/{{assignmentId}}/decline" } },
+        { "name": "Get Assignment", "request": { "method": "GET", "url": "{{baseUrl}}/api/assignments/{{assignmentId}}" } },
+        { "name": "My Assignments", "request": { "method": "GET", "url": "{{baseUrl}}/api/assignments/my" } },
+        { "name": "Assignments By Submission", "request": { "method": "GET", "url": "{{baseUrl}}/api/assignments/submission/{{submissionId}}" } },
+        { "name": "Assignment Suggestions", "request": { "method": "GET", "url": "{{baseUrl}}/api/assignments/submission/{{submissionId}}/suggestions" } },
+        {
+          "name": "Auto Assign",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"submissionId\": {{submissionId}},\n  \"numberOfReviewers\": 3\n}" },
+            "url": "{{baseUrl}}/api/assignments/auto-assign"
+          }
+        },
+        {
+          "name": "Bulk Assign",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"assignments\": [\n    {\n      \"submissionId\": {{submissionId}},\n      \"reviewerId\": {{reviewerId}},\n      \"isPrimary\": true\n    }\n  ]\n}" },
+            "url": "{{baseUrl}}/api/assignments/bulk"
+          }
+        },
+        {
+          "name": "Reassign",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"newReviewerId\": {{reviewerId}},\n  \"reason\": \"Reassign from Postman\"\n}" },
+            "url": "{{baseUrl}}/api/assignments/{{assignmentId}}/reassign"
+          }
+        },
+        { "name": "Assignment Statistics", "request": { "method": "GET", "url": "{{baseUrl}}/api/assignments/conference/{{conferenceId}}/statistics" } },
+        { "name": "Assignment Quality Metrics", "request": { "method": "GET", "url": "{{baseUrl}}/api/assignments/conference/{{conferenceId}}/quality-metrics" } },
+        { "name": "Delete Assignment", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/assignments/{{assignmentId}}" } }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Or Update Draft Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const json = pm.response.json();", "const data = json.data || json;", "if (data.id) pm.environment.set('reviewId', data.id);"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"assignmentId\": {{assignmentId}},\n  \"summary\": \"Good paper summary.\",\n  \"strengths\": \"Clear contribution.\",\n  \"weaknesses\": \"Needs more evaluation.\",\n  \"comments\": \"Review created from Postman.\",\n  \"score\": \"ACCEPT\",\n  \"isConfidential\": false,\n  \"overallRating\": 4,\n  \"confidence\": 3\n}" },
+            "url": "{{baseUrl}}/api/reviews/draft"
+          }
+        },
+        { "name": "Submit Review", "request": { "method": "POST", "url": "{{baseUrl}}/api/reviews/{{reviewId}}/submit" } },
+        { "name": "Get Review", "request": { "method": "GET", "url": "{{baseUrl}}/api/reviews/{{reviewId}}" } },
+        { "name": "Review By Assignment", "request": { "method": "GET", "url": "{{baseUrl}}/api/reviews/assignment/{{assignmentId}}" } },
+        { "name": "Reviews By Submission", "request": { "method": "GET", "url": "{{baseUrl}}/api/reviews/submission/{{submissionId}}" } },
+        { "name": "Average Score", "request": { "method": "GET", "url": "{{baseUrl}}/api/reviews/submission/{{submissionId}}/average-score" } },
+        { "name": "Review Statistics", "request": { "method": "GET", "url": "{{baseUrl}}/api/reviews/conference/{{conferenceId}}/statistics" } },
+        {
+          "name": "Add Internal Comment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "text/plain" }],
+            "body": { "mode": "raw", "raw": "Internal comment from Postman" },
+            "url": "{{baseUrl}}/api/reviews/submission/{{submissionId}}/comments"
+          }
+        },
+        { "name": "List Internal Comments", "request": { "method": "GET", "url": "{{baseUrl}}/api/reviews/submission/{{submissionId}}/comments" } },
+        {
+          "name": "Create Or Update Rebuttal",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"submissionId\": {{submissionId}},\n  \"content\": \"Author rebuttal from Postman.\"\n}" },
+            "url": "{{baseUrl}}/api/reviews/rebuttal"
+          }
+        },
+        { "name": "Submit Rebuttal", "request": { "method": "POST", "url": "{{baseUrl}}/api/reviews/rebuttal/{{reviewId}}/submit" } },
+        { "name": "Rebuttal By Submission", "request": { "method": "GET", "url": "{{baseUrl}}/api/reviews/rebuttal/submission/{{submissionId}}" } }
+      ]
+    },
+    {
+      "name": "PC",
+      "item": [
+        {
+          "name": "Invite PC Member",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"email\": \"reviewer@example.com\"\n}" },
+            "url": "{{baseUrl}}/api/pc/invite"
+          }
+        },
+        { "name": "Accept Invitation", "request": { "auth": { "type": "noauth" }, "method": "POST", "url": "{{baseUrl}}/api/pc/invitation/accept?token={{invitationToken}}" } },
+        { "name": "Decline Invitation", "request": { "auth": { "type": "noauth" }, "method": "POST", "url": "{{baseUrl}}/api/pc/invitation/decline?token={{invitationToken}}" } },
+        { "name": "PC Members", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/conference/{{conferenceId}}/members" } },
+        { "name": "My PC Membership", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/conference/{{conferenceId}}/membership" } },
+        { "name": "PC Invitations", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/conference/{{conferenceId}}/invitations" } },
+        {
+          "name": "Declare COI",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"submissionId\": {{submissionId}},\n  \"type\": \"OTHER\",\n  \"reason\": \"Testing COI declaration\"\n}" },
+            "url": "{{baseUrl}}/api/pc/coi/declare"
+          }
+        },
+        { "name": "My COIs", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/coi/my" } },
+        { "name": "COIs By Submission", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/coi/submission/{{submissionId}}" } },
+        { "name": "Check COI", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/coi/check?submissionId={{submissionId}}" } },
+        { "name": "Reviewer Workload", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/reviewer/{{reviewerId}}/workload?conferenceId={{conferenceId}}" } },
+        { "name": "Workload Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/conference/{{conferenceId}}/workload-stats" } },
+        { "name": "Workload Alerts", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/conference/{{conferenceId}}/workload-alerts" } },
+        { "name": "COI History", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/conference/{{conferenceId}}/coi/history" } },
+        { "name": "COI Statistics", "request": { "method": "GET", "url": "{{baseUrl}}/api/pc/conference/{{conferenceId}}/coi/statistics" } },
+        { "name": "Delete COI", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/pc/coi/{{coiId}}" } }
+      ]
+    },
+    {
+      "name": "Decisions",
+      "item": [
+        {
+          "name": "Create Decision",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const json = pm.response.json();", "const data = json.data || json;", "if (data.id) pm.environment.set('decisionId', data.id);"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"submissionId\": {{submissionId}},\n  \"type\": \"ACCEPT\",\n  \"comments\": \"Decision from Postman.\",\n  \"sendNotification\": false\n}" },
+            "url": "{{baseUrl}}/api/decisions"
+          }
+        },
+        {
+          "name": "Bulk Decisions",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"submissionIds\": [{{submissionId}}],\n  \"type\": \"ACCEPT\",\n  \"comments\": \"Bulk decision from Postman.\",\n  \"sendNotification\": false\n}" },
+            "url": "{{baseUrl}}/api/decisions/bulk"
+          }
+        },
+        { "name": "Decision History", "request": { "method": "GET", "url": "{{baseUrl}}/api/decisions/{{decisionId}}/history" } },
+        { "name": "Decision By Submission", "request": { "method": "GET", "url": "{{baseUrl}}/api/decisions/submission/{{submissionId}}" } },
+        { "name": "Decisions By Conference", "request": { "method": "GET", "url": "{{baseUrl}}/api/decisions/conference/{{conferenceId}}" } },
+        { "name": "Pending Notifications", "request": { "method": "GET", "url": "{{baseUrl}}/api/decisions/pending-notifications" } },
+        { "name": "Notify Decision", "request": { "method": "POST", "url": "{{baseUrl}}/api/decisions/notify/{{decisionId}}" } },
+        {
+          "name": "Bulk Notifications",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"submissionIds\": [{{submissionId}}],\n  \"notificationType\": \"DECISION_ACCEPT\",\n  \"customSubject\": \"Decision notification\",\n  \"customMessage\": \"Your paper decision is available.\"\n}" },
+            "url": "{{baseUrl}}/api/decisions/notifications/bulk"
+          }
+        },
+        {
+          "name": "Update Decision",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"CONDITIONAL_ACCEPT\",\n  \"comments\": \"Updated decision.\",\n  \"reason\": \"Testing update from Postman\"\n}" },
+            "url": "{{baseUrl}}/api/decisions/{{decisionId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        { "name": "List Notifications", "request": { "method": "GET", "url": "{{baseUrl}}/api/notifications" } },
+        { "name": "Notifications By Submission", "request": { "method": "GET", "url": "{{baseUrl}}/api/notifications/submission/{{submissionId}}" } },
+        { "name": "Notifications By User", "request": { "method": "GET", "url": "{{baseUrl}}/api/notifications/user/{{userId}}" } }
+      ]
+    },
+    {
+      "name": "Camera Ready",
+      "item": [
+        { "name": "Author Get Camera Ready Paper", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/papers/{{paperId}}" } },
+        {
+          "name": "Author Upload Camera Ready",
+          "request": {
+            "method": "POST",
+            "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": [] }] },
+            "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/papers/{{paperId}}/upload"
+          }
+        },
+        { "name": "Author List Versions", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/papers/{{paperId}}/versions" } },
+        { "name": "Author Download Version", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/papers/{{paperId}}/versions/{{versionId}}/download" } },
+        {
+          "name": "Author Confirm Copyright",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"confirmed\": true\n}" },
+            "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/papers/{{paperId}}/confirm-copyright"
+          }
+        },
+        { "name": "Chair List Submissions", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/submissions" } },
+        {
+          "name": "Chair Review Submission",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"decision\": \"APPROVED\",\n  \"note\": \"Approved from Postman\",\n  \"versionId\": \"{{versionId}}\"\n}" },
+            "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/submissions/{{cameraReadySubmissionId}}/review"
+          }
+        },
+        { "name": "Chair Current Version", "request": { "method": "PUT", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/submissions/{{cameraReadySubmissionId}}/current-version?versionId={{versionId}}" } },
+        { "name": "Chair Get Metadata", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/submissions/{{cameraReadySubmissionId}}/metadata" } },
+        {
+          "name": "Chair Update Metadata",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated Camera Ready Title\",\n  \"abstractText\": \"Updated metadata from Postman.\",\n  \"keywords\": \"camera-ready, postman\"\n}" },
+            "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/submissions/{{cameraReadySubmissionId}}/metadata"
+          }
+        },
+        { "name": "Chair Statistics", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/statistics" } },
+        { "name": "Export JSON", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/export/json" } },
+        { "name": "Export CSV", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/export/csv" } },
+        { "name": "Export ZIP", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/export/zip" } },
+        { "name": "Export PDF", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/export/pdf" } },
+        {
+          "name": "Open Camera Ready",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"deadline\": \"2026-12-31T23:59:00\"\n}" },
+            "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/open"
+          }
+        },
+        {
+          "name": "Close Camera Ready",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Closed from Postman\"\n}" },
+            "url": "{{baseUrl}}/api/v1/conferences/{{conferenceId}}/camera-ready/close"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        { "name": "Conference Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/reports/conference/{{conferenceId}}/stats" } },
+        { "name": "Review Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/reports/conference/{{conferenceId}}/review-stats" } },
+        { "name": "SLA Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/reports/conference/{{conferenceId}}/sla-stats" } },
+        { "name": "Export Report", "request": { "method": "GET", "url": "{{baseUrl}}/api/reports/export?conferenceId={{conferenceId}}&format=csv" } },
+        { "name": "Reporting Dashboard", "request": { "method": "GET", "url": "{{baseUrl}}/api/reporting/conference/{{conferenceId}}" } },
+        { "name": "Create Report Snapshot", "request": { "method": "POST", "url": "{{baseUrl}}/api/reporting/conference/{{conferenceId}}/snapshot" } },
+        { "name": "Report History", "request": { "method": "GET", "url": "{{baseUrl}}/api/reporting/conference/{{conferenceId}}/history" } }
+      ]
+    },
+    {
+      "name": "AI",
+      "item": [
+        {
+          "name": "Author Spell Check",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"title\": \"A test papper\",\n  \"abstractText\": \"This is a sample abstract for spell checking.\",\n  \"keywords\": \"testing, api\",\n  \"language\": \"en\"\n}" },
+            "url": "{{baseUrl}}/api/ai/author/spell-check"
+          }
+        },
+        {
+          "name": "Author Abstract Polish",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"abstractText\": \"This paper talks about testing APIs with Postman.\",\n  \"tone\": \"formal\",\n  \"language\": \"en\"\n}" },
+            "url": "{{baseUrl}}/api/ai/author/abstract-polish"
+          }
+        },
+        {
+          "name": "Author Keyword Suggest",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"title\": \"API Testing with Postman\",\n  \"abstractText\": \"This paper studies API testing workflows.\",\n  \"existingKeywords\": \"api\",\n  \"maxKeywords\": 5\n}" },
+            "url": "{{baseUrl}}/api/ai/author/keyword-suggest"
+          }
+        },
+        {
+          "name": "PC Neutral Summary",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"abstractText\": \"This paper studies API testing workflows.\",\n  \"targetWordCount\": 80\n}" },
+            "url": "{{baseUrl}}/api/ai/pc/neutral-summary"
+          }
+        },
+        {
+          "name": "PC Key Points",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"abstractText\": \"This paper studies API testing workflows.\"\n}" },
+            "url": "{{baseUrl}}/api/ai/pc/key-points"
+          }
+        },
+        {
+          "name": "Assignment Similarity Hint",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"submissionId\": {{submissionId}},\n  \"paperKeywords\": [\"api\", \"testing\"],\n  \"paperTopics\": [\"Software Engineering\"],\n  \"reviewerId\": {{reviewerId}},\n  \"reviewerExpertise\": [\"testing\", \"quality assurance\"]\n}" },
+            "url": "{{baseUrl}}/api/ai/assignment/similarity-hint"
+          }
+        },
+        {
+          "name": "Chair Email Draft",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"conferenceId\": {{conferenceId}},\n  \"emailType\": \"DECISION\",\n  \"context\": \"Paper accepted with minor revisions.\",\n  \"conferenceName\": \"Test Conference\",\n  \"recipientName\": \"Author\",\n  \"tone\": \"formal\",\n  \"language\": \"en\"\n}" },
+            "url": "{{baseUrl}}/api/ai/chair/email-draft"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs",
+      "item": [
+        { "name": "List Audit Logs", "request": { "method": "GET", "url": "{{baseUrl}}/api/audit-logs?page=0&size=20" } },
+        { "name": "Get Audit Log", "request": { "method": "GET", "url": "{{baseUrl}}/api/audit-logs/1" } },
+        { "name": "Export Audit Logs", "request": { "method": "GET", "url": "{{baseUrl}}/api/audit-logs/export" } }
+      ]
+    },
+    {
+      "name": "Storage Backup",
+      "item": [
+        { "name": "Backup Conference", "request": { "method": "POST", "url": "{{baseUrl}}/api/storage/backup/conference/{{conferenceId}}" } },
+        { "name": "Backup All", "request": { "method": "POST", "url": "{{baseUrl}}/api/storage/backup/all" } },
+        { "name": "Restore Backup", "request": { "method": "POST", "url": "{{baseUrl}}/api/storage/backup/1/restore" } },
+        { "name": "Restore Conference Latest", "request": { "method": "POST", "url": "{{baseUrl}}/api/storage/backup/conference/{{conferenceId}}/restore" } },
+        { "name": "Backups By Conference", "request": { "method": "GET", "url": "{{baseUrl}}/api/storage/backup/conference/{{conferenceId}}" } },
+        { "name": "List Backups", "request": { "method": "GET", "url": "{{baseUrl}}/api/storage/backup" } }
+      ]
+    },
+    {
+      "name": "Docs",
+      "item": [
+        { "name": "OpenAPI JSON", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": "{{baseUrl}}/api-docs" } },
+        { "name": "Swagger UI", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": "{{baseUrl}}/swagger-ui.html" } }
+      ]
+    }
+  ]
+}

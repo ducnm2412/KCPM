@@ -101,6 +101,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
   Optional<User> findByProviderId(String providerId);
 
   /**
+   * Tìm user theo số điện thoại
+   *
+   * @param phone Số điện thoại
+   * @return Optional chứa User nếu tìm thấy
+   */
+  Optional<User> findByPhone(String phone);
+
+  /**
    * Đếm số user đang active
    *
    * @return Số lượng active users

@@ -1,0 +1,42 @@
+[
+  {
+    "test_case": "TC_020",
+    "description": "Search user thành công",
+    "keyword": "User123",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJzdWIiOiJhZG1pbkB1dGguZWR1LnZuIiwiaWF0IjoxNzgwMDQ0OTczLCJleHAiOjE3ODAwNDg1NzN9.KwreIsd9KwNIzCL2rFN6C3MAO0Xqcu9670KWUg2sraI",
+    "expected_status": 200,
+    "expected_success": true
+  },
+  {
+    "test_case": "TC_021",
+    "description": "Không gửi token",
+    "keyword": "Test",
+    "token": "",
+    "expected_status": 401,
+    "expected_success": false
+  },
+  {
+    "test_case": "TC_022",
+    "description": "Search keyword rỗng",
+    "keyword": "",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJzdWIiOiJhZG1pbkB1dGguZWR1LnZuIiwiaWF0IjoxNzgwMDQ0OTczLCJleHAiOjE3ODAwNDg1NzN9.KwreIsd9KwNIzCL2rFN6C3MAO0Xqcu9670KWUg2sraI",
+    "expected_status": 400,
+    "expected_success": false
+  },
+  {
+    "test_case": "TC_023",
+    "description": "Search không có kết quả",
+    "keyword": "nguoi_ngoai_hanh_tinh_123",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJzdWIiOiJhZG1pbkB1dGguZWR1LnZuIiwiaWF0IjoxNzgwMDQ0OTczLCJleHAiOjE3ODAwNDg1NzN9.KwreIsd9KwNIzCL2rFN6C3MAO0Xqcu9670KWUg2sraI",
+    "expected_status": 200,
+    "expected_success": true
+  },
+  {
+    "test_case": "TC_024",
+    "description": "Search theo thông tin (Email)",
+    "keyword": "@ut.edu.vn",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBRE1JTiJdLCJzdWIiOiJhZG1pbkB1dGguZWR1LnZuIiwiaWF0IjoxNzgwMDQ0OTczLCJleHAiOjE3ODAwNDg1NzN9.KwreIsd9KwNIzCL2rFN6C3MAO0Xqcu9670KWUg2sraI",
+    "expected_status": 200,
+    "expected_success": true
+  }
+]
