@@ -198,6 +198,7 @@ const LoginPage: React.FC = () => {
               {/* Email / Username */}
               <div className="mb-3">
                 <CFormInput
+                  data-testid="login-email"
                   type="email"
                   placeholder="Tài khoản đăng nhập"
                   value={email}
@@ -211,6 +212,7 @@ const LoginPage: React.FC = () => {
               {/* Password */}
               <div className="mb-2">
                 <CFormInput
+                  data-testid="login-password"
                   type="password"
                   placeholder="Mật khẩu"
                   value={password}
@@ -223,7 +225,7 @@ const LoginPage: React.FC = () => {
 
               {/* Login Button */}
               <div className="d-grid gap-2">
-                <CButton type="submit" style={styles.btnSubmit} disabled={loading}>
+                <CButton data-testid="login-submit" type="submit" style={styles.btnSubmit} disabled={loading}>
                   {loading ? <CSpinner size="sm" /> : 'ĐĂNG NHẬP'}
                 </CButton>
               </div>

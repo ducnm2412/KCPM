@@ -41,6 +41,14 @@ pipeline {
             }
         }
 
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Package Source') {
             steps {
                 sh '''
@@ -60,6 +68,30 @@ pipeline {
                           "APP_PATH='$APP_PATH' RELEASE_ARCHIVE='/tmp/$RELEASE_ARCHIVE' bash -s" \
                           < deploy/ec2/deploy-docker.sh
                     '''
+                }
+            }
+        }
+
+        stage('CodeceptJS Auth E2E') {
+            steps {
+                dir('e2e') {
+                    sh 'npm ci'
+                    sh '''
+                        for i in $(seq 1 30); do
+                          if curl -fsS "http://$EC2_HOST/login" >/dev/null; then
+                            break
+                          fi
+                          sleep 5
+                        done
+
+                        curl -fsS "http://$EC2_HOST/login" >/dev/null
+                        CODECEPT_URL="http://$EC2_HOST" npm run test:headless
+                    '''
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'e2e/output/**', allowEmptyArchive: true
                 }
             }
         }
