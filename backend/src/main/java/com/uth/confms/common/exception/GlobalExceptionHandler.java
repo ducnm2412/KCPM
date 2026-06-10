@@ -14,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 /**
@@ -121,6 +122,22 @@ public class GlobalExceptionHandler {
     log.warn("Validation errors: {}", errors);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error("Validation failed", errors));
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  // Xử lý lỗi kiểu dữ liệu không hợp lệ trong path variable hoặc request
+  // parameter
+  public ResponseEntity<ApiResponse<Object>> handleMethodArgumentTypeMismatch(
+      MethodArgumentTypeMismatchException e) {
+    String paramName = e.getName();
+    String paramValue = e.getValue() != null ? e.getValue().toString() : "null";
+    String requiredType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "unknown";
+    String errorMessage = String.format(
+        "Invalid conference id",
+        paramName, paramValue, requiredType);
+    log.warn("Type mismatch: {}", errorMessage);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error(errorMessage));
   }
 
   @ExceptionHandler(Exception.class)
