@@ -1,0 +1,151 @@
+name: CodeceptJS E2E Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  codeceptjs-e2e:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache frontend npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('frontend/package-lock.json', 'e2e/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install e2e dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Build backend
+        working-directory: backend
+        run: mvn -B -DskipTests package
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          nohup java \
+            "-Dspring.profiles.active=dev" \
+            "-Dserver.port=8080" \
+            "-Dspring.mail.host=localhost" \
+            "-Dapp.oauth2.enabled=false" \
+            "-Dspring.security.oauth2.client.registration.google.client-id=ci-disabled" \
+            "-Dspring.security.oauth2.client.registration.google.client-secret=ci-disabled" \
+            "-Dapp.rate-limiting.enabled=true" \
+            "-Dapp.rate-limiting.use-redis=false" \
+            "-Dapp.rate-limiting.auth.max-requests=100" \
+            "-Dapp.rate-limiting.api.max-requests=1000" \
+            "-Dapp.storage.base-dir=./uploads" \
+            "-Dapp.storage.backup.enabled=false" \
+            "-Dspring.cache.type=none" \
+            "-Dmanagement.health.redis.enabled=false" \
+            "-Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisHealthContributorAutoConfiguration,org.springframework.boot.actuate.autoconfigure.data.redis.RedisReactiveHealthContributorAutoConfiguration" \
+            "-Dspring.jpa.show-sql=false" \
+            "-Dlogging.level.org.hibernate=ERROR" \
+            "-Dlogging.level.org.springframework.data.redis=ERROR" \
+            -jar target/confms-1.0.0.jar \
+            > ../backend.log 2>&1 &
+          echo $! > ../backend.pid
+
+      - name: Wait for backend
+        run: |
+          backend_pid="$(cat backend.pid)"
+          for i in {1..120}; do
+            if ! kill -0 "$backend_pid" 2>/dev/null; then
+              echo "Backend process exited before becoming ready"
+              cat backend.log
+              exit 1
+            fi
+
+            if curl -fsS http://localhost:8080/api-docs >/dev/null; then
+              echo "Backend is ready"
+              exit 0
+            fi
+
+            echo "Waiting for backend... ($i/120)"
+            sleep 2
+          done
+
+          echo "Backend did not start in time"
+          cat backend.log
+          exit 1
+
+      - name: Start frontend
+        working-directory: frontend
+        run: |
+          nohup npm run dev -- --host 127.0.0.1 --port 3000 \
+            > ../frontend.log 2>&1 &
+          echo $! > ../frontend.pid
+
+      - name: Wait for frontend
+        run: |
+          frontend_pid="$(cat frontend.pid)"
+          for i in {1..60}; do
+            if ! kill -0 "$frontend_pid" 2>/dev/null; then
+              echo "Frontend process exited before becoming ready"
+              cat frontend.log
+              exit 1
+            fi
+
+            if curl -fsS http://localhost:3000/login >/dev/null; then
+              echo "Frontend is ready"
+              exit 0
+            fi
+
+            echo "Waiting for frontend... ($i/60)"
+            sleep 2
+          done
+
+          echo "Frontend did not start in time"
+          cat frontend.log
+          exit 1
+
+      - name: Run CodeceptJS tests
+        working-directory: e2e
+        env:
+          CODECEPT_URL: http://localhost:3000
+          E2E_ORGANIZATION_SEARCH: UTH
+          E2E_REGISTER_PASSWORD: Codecept@2026
+        run: npm run test:headless
+
+      - name: Upload CodeceptJS artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeceptjs-e2e-artifacts
+          path: |
+            backend.log
+            frontend.log
+            e2e/output
