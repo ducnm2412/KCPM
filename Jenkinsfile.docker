@@ -74,20 +74,23 @@ pipeline {
 
         stage('CodeceptJS Auth E2E') {
             steps {
-                dir('e2e') {
-                    sh 'npm ci'
-                    sh '''
-                        for i in $(seq 1 30); do
-                          if curl -fsS "http://$EC2_HOST/login" >/dev/null; then
-                            break
-                          fi
-                          sleep 5
-                        done
+                sh '''
+                    for i in $(seq 1 30); do
+                      if curl -fsS "http://$EC2_HOST/login" >/dev/null; then
+                        break
+                      fi
+                      sleep 5
+                    done
 
-                        curl -fsS "http://$EC2_HOST/login" >/dev/null
-                        CODECEPT_URL="http://$EC2_HOST" npm run test:headless
-                    '''
-                }
+                    curl -fsS "http://$EC2_HOST/login" >/dev/null
+
+                    docker run --rm \
+                      -v "$WORKSPACE/e2e:/e2e" \
+                      -w /e2e \
+                      -e CODECEPT_URL="http://$EC2_HOST" \
+                      mcr.microsoft.com/playwright:v1.60.0-noble \
+                      bash -lc "npm ci && npm run test:headless"
+                '''
             }
             post {
                 always {
