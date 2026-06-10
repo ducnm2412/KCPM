@@ -4,7 +4,7 @@ exports.config = {
   noGlobals: true,
   helpers: {
     Playwright: {
-      url: process.env.CODECEPT_URL || "http://localhost",
+      url: process.env.CODECEPT_URL || "http://13.211.207.13/",
       browser: "chromium",
       show: false,
       waitForTimeout: 15000,
