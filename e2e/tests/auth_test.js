@@ -26,15 +26,16 @@ const testUser = {
 
 Scenario("login page is reachable", ({ I }) => {
   I.amOnPage("/login");
-  I.seeElement(selectors.loginEmail);
-  I.seeElement(selectors.loginPassword);
-  I.seeElement(selectors.loginSubmit);
+  I.waitForElement(selectors.loginEmail, 10);
+  I.waitForElement(selectors.loginPassword, 10);
+  I.waitForElement(selectors.loginSubmit, 10);
 });
 
 Scenario("user can register and login", async ({ I }) => {
   I.amOnPage("/register");
-  I.seeElement(selectors.registerEmail);
+  I.waitForElement(selectors.registerEmail, 10);
 
+  I.waitForElement(selectors.registerFirstName, 10);
   I.fillField(selectors.registerFirstName, testUser.firstName);
   I.fillField(selectors.registerLastName, testUser.lastName);
   I.fillField(selectors.registerOrganization, testUser.organizationSearch);
@@ -61,6 +62,7 @@ Scenario("user can register and login", async ({ I }) => {
   });
 
   I.amOnPage("/login");
+  I.waitForElement(selectors.loginEmail, 10);
   I.fillField(selectors.loginEmail, testUser.email);
   I.fillField(selectors.loginPassword, testUser.password);
   I.click(selectors.loginSubmit);
