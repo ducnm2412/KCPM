@@ -133,8 +133,10 @@ public class GlobalExceptionHandler {
     String paramValue = e.getValue() != null ? e.getValue().toString() : "null";
     String requiredType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "unknown";
     String errorMessage = String.format(
-        "Invalid conference id",
-        paramName, paramValue, requiredType);
+        "Invalid value '%s' for parameter '%s'. Expected type: %s",
+        paramValue,
+        paramName,
+        requiredType);
     log.warn("Type mismatch: {}", errorMessage);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error(errorMessage));
@@ -154,16 +156,9 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
-  public ResponseEntity<ApiResponse<Object>> handleResponseStatusException(org.springframework.web.server.ResponseStatusException e) {
+  public ResponseEntity<ApiResponse<Object>> handleResponseStatusException(
+      org.springframework.web.server.ResponseStatusException e) {
     log.warn("Response status exception: {}", e.getReason());
     return ResponseEntity.status(e.getStatusCode()).body(ApiResponse.error(e.getReason()));
-  }
-
-  @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
-  // Xử lý lỗi sai định dạng kiểu dữ liệu trên URL (VD: truyền "abc" vào tham số kiểu Long)
-  public ResponseEntity<ApiResponse<Object>> handleTypeMismatchException(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException e) {
-    log.warn("Type mismatch error: {}", e.getMessage());
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ApiResponse.error("Invalid input format for parameter: " + e.getName()));
   }
 }
