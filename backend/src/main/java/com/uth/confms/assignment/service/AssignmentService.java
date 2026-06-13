@@ -119,6 +119,10 @@ public class AssignmentService {
       throw new UnauthorizedException("Only conference chair or admin can assign reviewers");
     }
 
+    // Check if reviewer exists first
+    userRepository.findById(dto.getReviewerId())
+        .orElseThrow(() -> new NotFoundException("Reviewer with id " + dto.getReviewerId() + " not found"));
+
     // Check if reviewer is a PC member
     PCMember pcMember = pcMemberRepository
         .findByConferenceIdAndUserId(submission.getConferenceId(), dto.getReviewerId())
@@ -323,6 +327,9 @@ public class AssignmentService {
     }
 
     // Validate new reviewer (same validations as createAssignment)
+    userRepository.findById(newReviewerId)
+        .orElseThrow(() -> new NotFoundException("Reviewer with id " + newReviewerId + " not found"));
+
     PCMember newPCMember = pcMemberRepository
         .findByConferenceIdAndUserId(submission.getConferenceId(), newReviewerId)
         .orElseThrow(
@@ -428,7 +435,7 @@ public class AssignmentService {
 
     // Check authorization - reviewer or chair
     if (!assignment.getReviewerId().equals(userId) && !conference.getChairId().equals(userId)) {
-      throw new UnauthorizedException("You don't have permission to view this assignment");
+      throw new ForbiddenException("You don't have permission to view this assignment");
     }
 
     return mapToDTO(assignment);

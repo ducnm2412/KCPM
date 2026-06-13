@@ -18,6 +18,7 @@ import java.util.List;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -99,7 +100,7 @@ public class SubmissionController {
     public ResponseEntity<ApiResponse<SubmissionResponseDTO>> createSubmission(
             @Valid @RequestBody SubmissionCreateDTO dto, Authentication authentication) {
         Long authorId = getUserIdFromAuthentication(authentication);
-        return ResponseEntity.ok(
+        return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.success(submissionService.createSubmission(dto, authorId)));
     }
 
