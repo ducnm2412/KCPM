@@ -1,0 +1,22 @@
+[
+  {
+    "test_case": "TC_001_Get_profile_thanh_cong",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBVVRIT1IiXSwic3ViIjoiYW5odnRuMDQ5MkB1dC5lZHUudm4iLCJpYXQiOjE3ODAwMzk2MzcsImV4cCI6MTc4MDA0MzIzN30.R7upUprxYY9_TidFaQXwl1gKH1_H-xtIpsx0h2HVXCk",
+    "method": "GET",
+    "expected_status": 200,
+    "expected_role": "AUTHOR",
+    "check_fields": true,
+    "check_no_password": true,
+    "check_content_type": true
+  },
+  {
+    "test_case": "TC_002_Khong_gui_token",
+    "token": "",
+    "method": "GET",
+    "expected_status": 401,
+    "expected_role": "",
+    "check_fields": false,
+    "check_no_password": false,
+    "check_content_type": false
+  }
+]

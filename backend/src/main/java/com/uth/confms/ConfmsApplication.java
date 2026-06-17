@@ -1,6 +1,8 @@
 package com.uth.confms;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -15,78 +17,114 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 @EnableRetry
+@Slf4j
 public class ConfmsApplication {
 
-  @jakarta.annotation.PostConstruct
+  @PostConstruct
   public void init() {
-    // Set TimeZone to Asia/Ho_Chi_Minh (UTC+7)
-    java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+    java.util.TimeZone.setDefault(
+        java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
   }
 
   public static void main(String[] args) {
-    // Load .env file if it exists
+    loadEnvironmentVariables();
+    SpringApplication.run(ConfmsApplication.class, args);
+  }
+
+  private static void loadEnvironmentVariables() {
     try {
-      Dotenv dotenv = null;
-      String userDir = System.getProperty("user.dir");
+      String[] searchPaths = getSearchPaths();
 
-      // Try multiple locations for .env file
-      String[] searchPaths = {
-          ".", // Current directory
-          userDir, // User directory (usually backend/ when running from Maven)
-          userDir + "/backend", // Explicit backend subdirectory
-          "../", // Parent directory
-          "../backend" // Backend in parent
-      };
-
-      for (String path : searchPaths) {
-        try {
-          java.io.File envFile = new java.io.File(path, ".env");
-          if (envFile.exists() && envFile.isFile()) {
-            dotenv = Dotenv.configure()
-                .directory(path)
-                .ignoreIfMissing()
-                .load();
-            System.out.println("✅ Found .env file at: " + envFile.getAbsolutePath());
-            break;
-          }
-        } catch (Exception e) {
-          // Continue to next path
-        }
-      }
+      Dotenv dotenv = findDotenv(searchPaths);
 
       if (dotenv == null) {
-        // Last try: use default behavior (current directory)
-        try {
-          dotenv = Dotenv.configure()
-              .ignoreIfMissing()
-              .load();
-        } catch (Exception e) {
-          // Ignore
-        }
+        dotenv = loadDefaultDotenv();
       }
 
       if (dotenv != null) {
-        // Set system properties from .env file
-        int loadedCount = 0;
-        for (var entry : dotenv.entries()) {
-          String key = entry.getKey();
-          String value = entry.getValue();
-          if (System.getProperty(key) == null && System.getenv(key) == null) {
-            System.setProperty(key, value);
-            loadedCount++;
-          }
-        }
-        System.out.println("✅ Loaded " + loadedCount + " variables from .env file");
+        loadProperties(dotenv);
       } else {
-        System.out.println("⚠️ Note: .env file not found. Using environment variables and defaults.");
-        System.out.println("   Searched in: " + String.join(", ", searchPaths));
+        log.warn(".env file not found. Using environment variables and defaults.");
+        log.warn("Searched in: {}", String.join(", ", searchPaths));
       }
+
     } catch (Exception e) {
-      // .env file not found or error loading - continue without it
-      System.out.println("⚠️ Note: .env file not found or could not be loaded: " + e.getMessage());
-      System.out.println("   Using environment variables and defaults.");
+      log.warn("Could not load .env file: {}", e.getMessage());
+      log.warn("Using environment variables and defaults.");
+    }
+  }
+
+  private static String[] getSearchPaths() {
+    String userDir = System.getProperty("user.dir");
+
+    return new String[] {
+        ".",
+        userDir,
+        userDir + "/backend",
+        "../",
+        "../backend"
+    };
+  }
+
+  private static Dotenv findDotenv(String[] searchPaths) {
+    for (String path : searchPaths) {
+      Dotenv dotenv = tryLoadDotenv(path);
+
+      if (dotenv != null) {
+        return dotenv;
+      }
     }
 
-    SpringApplication.run(ConfmsApplication.class, args);
+    return null;
+  }
+
+  private static Dotenv tryLoadDotenv(String path) {
+    try {
+      java.io.File envFile = new java.io.File(path, ".env");
+
+      if (!envFile.exists() || !envFile.isFile()) {
+        return null;
+      }
+
+      Dotenv dotenv = Dotenv.configure()
+          .directory(path)
+          .ignoreIfMissing()
+          .load();
+
+      log.info("Found .env file at: {}", envFile.getAbsolutePath());
+
+      return dotenv;
+
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  private static Dotenv loadDefaultDotenv() {
+    try {
+      return Dotenv.configure()
+          .ignoreIfMissing()
+          .load();
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  private static void loadProperties(Dotenv dotenv) {
+    int loadedCount = 0;
+
+    for (var entry : dotenv.entries()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+
+      if (System.getProperty(key) == null
+          && System.getenv(key) == null) {
+
+        System.setProperty(key, value);
+        loadedCount++;
+      }
+    }
+
+    log.info("Loaded {} variables from .env file", loadedCount);
   }
 }

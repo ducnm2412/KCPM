@@ -19,6 +19,8 @@ pipeline {
     environment {
         BACKEND_DIR = 'backend'
         FRONTEND_DIR = 'frontend'
+        MAVEN_OPTS = '-Xms256m -Xmx1024m'
+        SONAR_SCANNER_JAVA_OPTS = '-Xms256m -Xmx1024m'
         RELEASE_ARCHIVE = "uth-confms-${env.BUILD_NUMBER}.tar.gz"
     }
 
@@ -46,6 +48,28 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('uth-confms-sonar') {
+                    dir(env.BACKEND_DIR) {
+                        sh '''
+                            mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar \
+                              -Dsonar.projectKey=uth-confms \
+                              -Dsonar.projectName=uth-confms
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+
         stage('Package Release') {
             steps {
                 sh '''
@@ -69,6 +93,30 @@ pipeline {
                           "DEPLOY_PATH='$DEPLOY_PATH' FRONTEND_PATH='$FRONTEND_PATH' SERVICE_NAME='$SERVICE_NAME' RELEASE_ARCHIVE='/tmp/$RELEASE_ARCHIVE' bash -s" \
                           < deploy/ec2/deploy.sh
                     '''
+                }
+            }
+        }
+
+        stage('CodeceptJS Auth E2E') {
+            steps {
+                dir('e2e') {
+                    sh 'npm ci'
+                    sh '''
+                        for i in $(seq 1 30); do
+                          if curl -fsS "http://$EC2_HOST/login" >/dev/null; then
+                            break
+                          fi
+                          sleep 5
+                        done
+
+                        curl -fsS "http://$EC2_HOST/login" >/dev/null
+                        CODECEPT_URL="http://$EC2_HOST" npm run test:headless
+                    '''
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'e2e/output/**', allowEmptyArchive: true
                 }
             }
         }

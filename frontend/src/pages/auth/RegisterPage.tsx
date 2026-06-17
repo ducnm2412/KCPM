@@ -210,6 +210,7 @@ const RegisterPage: React.FC = () => {
               <CRow className="mb-3">
                 <CCol md={7}>
                   <CFormInput
+                    data-testid="register-first-name"
                     type="text"
                     name="firstName"
                     placeholder={t('common.firstName') || 'Họ và tên đệm'}
@@ -222,6 +223,7 @@ const RegisterPage: React.FC = () => {
                 </CCol>
                 <CCol md={5}>
                   <CFormInput
+                    data-testid="register-last-name"
                     type="text"
                     name="lastName"
                     placeholder={t('common.lastName') || 'Tên'}
@@ -236,6 +238,8 @@ const RegisterPage: React.FC = () => {
 
               <div className="mb-3">
                 <OrganizationSelect
+                  inputTestId="register-organization"
+                  optionTestId="organization-option"
                   value={formData.organizationId || undefined}
                   onChange={(id) => setFormData(prev => ({ ...prev, organizationId: id }))}
                   style={styles.input}
@@ -246,6 +250,7 @@ const RegisterPage: React.FC = () => {
               {/* Email */}
               <div className="mb-3">
                 <CFormInput
+                  data-testid="register-email"
                   type="email"
                   name="email"
                   placeholder={t('common.email') || 'Email'}
@@ -260,6 +265,7 @@ const RegisterPage: React.FC = () => {
               {/* Password */}
               <div className="mb-3">
                 <CFormInput
+                  data-testid="register-password"
                   type="password"
                   name="password"
                   placeholder={t('common.password') || 'Mật khẩu'}
@@ -274,6 +280,7 @@ const RegisterPage: React.FC = () => {
               {/* Confirm Password */}
               <div className="mb-4">
                 <CFormInput
+                  data-testid="register-confirm-password"
                   type="password"
                   name="confirmPassword"
                   placeholder={t('auth.confirmPassword') || 'Xác nhận mật khẩu'}
@@ -287,7 +294,7 @@ const RegisterPage: React.FC = () => {
 
               {/* Submit Button */}
               <div className="d-grid gap-2">
-                <CButton type="submit" style={styles.btnSubmit} disabled={loading}>
+                <CButton data-testid="register-submit" type="submit" style={styles.btnSubmit} disabled={loading}>
                   {loading ? (
                     <CSpinner size="sm" />
                   ) : (

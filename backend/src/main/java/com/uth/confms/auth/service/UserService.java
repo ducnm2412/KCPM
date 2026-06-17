@@ -96,10 +96,16 @@ public class UserService {
     }
     if (userDTO.getOrganizationId() != null) {
       com.uth.confms.common.entity.Organization org = organizationRepository.findById(userDTO.getOrganizationId())
-          .orElseThrow(() -> new NotFoundException("Organization", userDTO.getOrganizationId()));
+          .orElseThrow(() -> new NotFoundException("Organization not found"));
       user.setOrganization(org);
     }
     if (userDTO.getPhone() != null) {
+      if (!userDTO.getPhone().equals(user.getPhone())) {
+        userRepository.findByPhone(userDTO.getPhone()).ifPresent(u -> {
+          throw new org.springframework.web.server.ResponseStatusException(
+              org.springframework.http.HttpStatus.CONFLICT, "Phone already exists");
+        });
+      }
       user.setPhone(userDTO.getPhone());
     }
 

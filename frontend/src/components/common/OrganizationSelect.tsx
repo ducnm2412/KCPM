@@ -14,6 +14,8 @@ interface OrganizationSelectProps {
     placeholder?: string;
     className?: string;
     style?: React.CSSProperties;
+    inputTestId?: string;
+    optionTestId?: string;
 }
 
 /**
@@ -24,7 +26,9 @@ const OrganizationSelect: React.FC<OrganizationSelectProps> = ({
     onChange,
     placeholder = 'Chọn trường/vị...',
     className = '',
-    style
+    style,
+    inputTestId,
+    optionTestId
 }) => {
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -80,6 +84,7 @@ const OrganizationSelect: React.FC<OrganizationSelectProps> = ({
     return (
         <div className="position-relative w-100" style={style}>
             <CFormInput
+                data-testid={inputTestId}
                 type="text"
                 placeholder={placeholder}
                 value={searchTerm}
@@ -96,6 +101,7 @@ const OrganizationSelect: React.FC<OrganizationSelectProps> = ({
                 <CListGroup className="position-absolute w-100 shadow-sm" style={{ zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}>
                     {filtered.map(org => (
                         <CListGroupItem
+                            data-testid={optionTestId}
                             key={org.id}
                             onClick={() => handleSelect(org)}
                             className="text-start list-group-item-action"

@@ -38,6 +38,8 @@ frontend/dist/
 frontend/build/
 frontend/.vite/
 frontend/.cache/
+e2e/node_modules/
+e2e/output/
 
 # Logs
 frontend/npm-debug.log*

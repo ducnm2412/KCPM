@@ -21,6 +21,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 /**
@@ -80,7 +81,13 @@ public class GlobalExceptionHandler {
   // Xử lý lỗi từ chối truy cập (Access Denied)
   public ResponseEntity<ApiResponse<Object>> handleAccessDeniedException(AccessDeniedException e) {
     log.warn("Access denied: {}", e.getMessage());
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Access denied"));
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<ApiResponse<Object>> handleForbiddenException(ForbiddenException e) {
+    log.warn("Forbidden: {}", e.getMessage());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
   }
 
   @ExceptionHandler(JwtException.class)
@@ -127,6 +134,7 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("Validation failed", errors));
   }
 
+<<<<<<< HEAD
   @ExceptionHandler(HttpMessageNotReadableException.class)
   public ResponseEntity<ApiResponse<Map<String, String>>> handleHttpMessageNotReadableException(
       HttpMessageNotReadableException e) {
@@ -185,6 +193,24 @@ public class GlobalExceptionHandler {
     log.warn("HTTP method not supported: {}", e.getMessage());
     return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
         .body(ApiResponse.error(e.getMessage()));
+=======
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  // Xử lý lỗi kiểu dữ liệu không hợp lệ trong path variable hoặc request
+  // parameter
+  public ResponseEntity<ApiResponse<Object>> handleMethodArgumentTypeMismatch(
+      MethodArgumentTypeMismatchException e) {
+    String paramName = e.getName();
+    String paramValue = e.getValue() != null ? e.getValue().toString() : "null";
+    String requiredType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "unknown";
+    String errorMessage = String.format(
+        "Invalid value '%s' for parameter '%s'. Expected type: %s",
+        paramValue,
+        paramName,
+        requiredType);
+    log.warn("Type mismatch: {}", errorMessage);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error(errorMessage));
+>>>>>>> origin/master
   }
 
   @ExceptionHandler(Exception.class)
@@ -198,5 +224,12 @@ public class GlobalExceptionHandler {
     }
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ApiResponse.error(errorMessage));
+  }
+
+  @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+  public ResponseEntity<ApiResponse<Object>> handleResponseStatusException(
+      org.springframework.web.server.ResponseStatusException e) {
+    log.warn("Response status exception: {}", e.getReason());
+    return ResponseEntity.status(e.getStatusCode()).body(ApiResponse.error(e.getReason()));
   }
 }

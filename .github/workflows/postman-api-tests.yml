@@ -17,6 +17,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+<<<<<<< HEAD
       - name: Detect CFP Postman tests
         id: cfp-tests
         run: |
@@ -34,6 +35,26 @@ jobs:
 
       - name: Set up Java 17
         if: steps.cfp-tests.outputs.has_tests == 'true'
+=======
+      - name: Detect Users Postman tests
+        id: users-tests
+        run: |
+          if [ -f "postman/UTH-ConfMS API.postman_collection.json" ] \
+            && [ -f "postman/UTH-ConfMS Local.postman_environment.json" ] \
+            && [ -f "postman/get_me_test_data.json" ] \
+            && [ -f "postman/list_users_test_data.json" ] \
+            && [ -f "postman/search_users_test_data.json" ] \
+            && [ -f "postman/update_me_test_data.json" ] \
+            && [ -f "postman/user_by_Id_test_data.json" ]; then
+            echo "has_tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_tests=false" >> "$GITHUB_OUTPUT"
+            echo "No Users Postman tests found on this branch."
+          fi
+
+      - name: Set up Java 17
+        if: steps.users-tests.outputs.has_tests == 'true'
+>>>>>>> origin/master
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -41,22 +62,38 @@ jobs:
           cache: maven
 
       - name: Set up Node.js
+<<<<<<< HEAD
         if: steps.cfp-tests.outputs.has_tests == 'true'
+=======
+        if: steps.users-tests.outputs.has_tests == 'true'
+>>>>>>> origin/master
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Install Newman
+<<<<<<< HEAD
         if: steps.cfp-tests.outputs.has_tests == 'true'
         run: npm install -g newman newman-reporter-htmlextra
 
       - name: Build backend
         if: steps.cfp-tests.outputs.has_tests == 'true'
+=======
+        if: steps.users-tests.outputs.has_tests == 'true'
+        run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Build backend
+        if: steps.users-tests.outputs.has_tests == 'true'
+>>>>>>> origin/master
         working-directory: backend
         run: mvn -B -DskipTests package
 
       - name: Start backend
+<<<<<<< HEAD
         if: steps.cfp-tests.outputs.has_tests == 'true'
+=======
+        if: steps.users-tests.outputs.has_tests == 'true'
+>>>>>>> origin/master
         working-directory: backend
         run: |
           nohup java \
@@ -77,13 +114,27 @@ jobs:
           echo $! > ../backend.pid
 
       - name: Wait for backend
+<<<<<<< HEAD
         if: steps.cfp-tests.outputs.has_tests == 'true'
+=======
+        if: steps.users-tests.outputs.has_tests == 'true'
+>>>>>>> origin/master
         run: |
           for i in {1..120}; do
+<<<<<<< HEAD
+=======
+            if ! kill -0 "$backend_pid" 2>/dev/null; then
+              echo "Backend process exited before becoming ready"
+              cat backend.log
+              exit 1
+            fi
+
+>>>>>>> origin/master
             if curl -fsS http://localhost:8080/api-docs >/dev/null; then
               echo "Backend is ready"
               exit 0
             fi
+<<<<<<< HEAD
             sleep 2
           done
           cat backend.log
@@ -91,9 +142,23 @@ jobs:
 
       - name: Login and export Postman environment
         if: steps.cfp-tests.outputs.has_tests == 'true'
+=======
+
+            echo "Waiting for backend... ($i/120)"
+            sleep 2
+          done
+
+          echo "Backend did not start in time"
+          cat backend.log
+          exit 1
+
+      - name: Run Users Me tests
+        if: steps.users-tests.outputs.has_tests == 'true'
+>>>>>>> origin/master
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
             -e "postman/UTH-ConfMS Local.postman_environment.json" \
+<<<<<<< HEAD
             --folder "Login" \
             --env-var baseUrl="http://localhost:8080" \
             --env-var email="admin@uth.edu.vn" \
@@ -144,9 +209,21 @@ jobs:
 
       - name: Run CFP Get By Conference tests
         if: steps.cfp-tests.outputs.has_tests == 'true'
+=======
+            -d "postman/get_me_test_data.json" \
+            --folder "Me" \
+            --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export "postman/reports/users-me-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-me-report.html"
+
+      - name: Run Users Update Me tests
+        if: steps.users-tests.outputs.has_tests == 'true'
+>>>>>>> origin/master
         run: |
-          mkdir -p postman/reports
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
+<<<<<<< HEAD
             -e "postman/ci-environment.json" \
             -d "postman/cfp-get-by-conference-data.json" \
             --folder "Get CFP By Conference" \
@@ -184,6 +261,61 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: postman-cfp-reports
+=======
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -d "postman/update_me_test_data.json" \
+            --folder "Update Me" \
+            --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export "postman/reports/users-update-me-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-update-me-report.html"
+
+      - name: Run Users Get By ID tests
+        if: steps.users-tests.outputs.has_tests == 'true'
+        run: |
+          newman run "postman/UTH-ConfMS API.postman_collection.json" \
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -d "postman/user_by_Id_test_data.json" \
+            --folder "Get User By ID" \
+            --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export "postman/reports/users-get-by-id-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-get-by-id-report.html"
+
+      - name: Run Users List tests
+        if: steps.users-tests.outputs.has_tests == 'true'
+        run: |
+          newman run "postman/UTH-ConfMS API.postman_collection.json" \
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -d "postman/list_users_test_data.json" \
+            --folder "List Users" \
+            --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export "postman/reports/users-list-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-list-report.html"
+
+      - name: Run Users Search tests
+        if: steps.users-tests.outputs.has_tests == 'true'
+        run: |
+          newman run "postman/UTH-ConfMS API.postman_collection.json" \
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -d "postman/search_users_test_data.json" \
+            --folder "Search Users" \
+            --env-var baseUrl="http://localhost:8080" \
+            --env-var isCollectionRun="true" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export "postman/reports/users-search-junit.xml" \
+            --reporter-htmlextra-export "postman/reports/users-search-report.html"
+
+      - name: Upload Newman reports
+        if: always() && steps.users-tests.outputs.has_tests == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-users-reports
+>>>>>>> origin/master
           path: |
             postman/reports
             backend.log
