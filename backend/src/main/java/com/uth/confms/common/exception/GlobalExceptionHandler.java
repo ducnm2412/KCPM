@@ -1,16 +1,23 @@
 package com.uth.confms.common.exception;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.uth.confms.common.dto.ApiResponse;
+import io.jsonwebtoken.JwtException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import io.jsonwebtoken.JwtException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -115,7 +122,10 @@ public class GlobalExceptionHandler {
         .getAllErrors()
         .forEach(
             error -> {
-              String fieldName = ((FieldError) error).getField();
+              String fieldName =
+                  error instanceof FieldError fieldError
+                      ? fieldError.getField()
+                      : error.getObjectName();
               String errorMessage = error.getDefaultMessage();
               errors.put(fieldName, errorMessage);
             });
@@ -124,6 +134,66 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("Validation failed", errors));
   }
 
+<<<<<<< HEAD
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ApiResponse<Map<String, String>>> handleHttpMessageNotReadableException(
+      HttpMessageNotReadableException e) {
+    Map<String, String> errors = new HashMap<>();
+    Throwable cause = e.getMostSpecificCause();
+    String fieldName = "request";
+    String errorMessage = "Invalid request body";
+
+    if (cause instanceof InvalidFormatException invalidFormatException) {
+      fieldName = extractFieldName(invalidFormatException.getPath());
+      errorMessage = "Invalid value type";
+    } else if (cause instanceof MismatchedInputException mismatchedInputException) {
+      fieldName = extractFieldName(mismatchedInputException.getPath());
+      errorMessage = "Invalid value type";
+    }
+
+    errors.put(fieldName, errorMessage);
+    log.warn("Request body validation errors: {}", errors);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("Validation failed", errors));
+  }
+
+  @ExceptionHandler(TypeMismatchException.class)
+  public ResponseEntity<ApiResponse<Map<String, String>>> handleTypeMismatchException(
+      TypeMismatchException e) {
+    Map<String, String> errors = new HashMap<>();
+    String fieldName = e.getPropertyName() != null ? e.getPropertyName() : "request";
+    errors.put(fieldName, "Invalid value type");
+    log.warn("Request parameter validation errors: {}", errors);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("Validation failed", errors));
+  }
+
+  private String extractFieldName(List<JsonMappingException.Reference> path) {
+    if (path == null || path.isEmpty()) {
+      return "request";
+    }
+
+    StringBuilder fieldName = new StringBuilder();
+    for (JsonMappingException.Reference reference : path) {
+      if (reference.getFieldName() != null) {
+        if (fieldName.length() > 0) {
+          fieldName.append(".");
+        }
+        fieldName.append(reference.getFieldName());
+      } else if (reference.getIndex() >= 0) {
+        fieldName.append("[").append(reference.getIndex()).append("]");
+      }
+    }
+    return fieldName.length() > 0 ? fieldName.toString() : "request";
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<ApiResponse<Object>> handleHttpRequestMethodNotSupportedException(
+      HttpRequestMethodNotSupportedException e) {
+    log.warn("HTTP method not supported: {}", e.getMessage());
+    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+        .body(ApiResponse.error(e.getMessage()));
+=======
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   // Xử lý lỗi kiểu dữ liệu không hợp lệ trong path variable hoặc request
   // parameter
@@ -140,6 +210,7 @@ public class GlobalExceptionHandler {
     log.warn("Type mismatch: {}", errorMessage);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error(errorMessage));
+>>>>>>> origin/master
   }
 
   @ExceptionHandler(Exception.class)

@@ -1,7 +1,10 @@
 package com.uth.confms.conference.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class TrackDTO {
   private Long id;
+  @NotBlank(message = "Track name is required")
   private String name; // Tên track
   private String description; // Mô tả
   private Boolean active; // Trạng thái hoạt động

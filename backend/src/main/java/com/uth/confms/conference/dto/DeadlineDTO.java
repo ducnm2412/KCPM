@@ -1,10 +1,18 @@
 package com.uth.confms.conference.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.time.LocalDateTime;
 
 public class DeadlineDTO {
   private Long id;
+  @NotBlank(message = "Deadline type is required")
+  @Pattern(
+      regexp = "SUBMISSION|REVIEW|REBUTTAL|DECISION|CAMERA_READY|PUBLICATION",
+      message = "Deadline type is invalid")
   private String type; // Loại hạn chót
+  @NotNull(message = "Deadline due date is required")
   private LocalDateTime dueDate; // Ngày hết hạn
   private String description; // Mô tả
   private Boolean hardDeadline; // Hạn chót cứng

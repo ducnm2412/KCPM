@@ -1,0 +1,29 @@
+[
+  {
+    "test_case": "close_cfp_success",
+    "conferenceId": 1,
+    "expected_status": 200,
+    "expected_success": true,
+    "expected_message": "Success",
+    "expected_open": false,
+    "expected_has_data": true
+  },
+  {
+    "test_case": "invalid_conference_id",
+    "conferenceId": 99999,
+    "expected_status": 404,
+    "expected_success": false,
+    "expected_message": "Conference with id 99999 not found",
+    "expected_open": null,
+    "expected_has_data": false
+  },
+  {
+    "test_case": "conference_without_cfp",
+    "conferenceId": 2,
+    "expected_status": 404,
+    "expected_success": false,
+    "expected_message": "CFP not found for this conference",
+    "expected_open": null,
+    "expected_has_data": false
+  }
+]

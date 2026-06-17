@@ -1,6 +1,9 @@
 package com.uth.confms.conference.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 
 /**
@@ -21,24 +24,32 @@ import java.util.List;
  * @version 1.0
  */
 public class ConferenceCreateDTO {
+<<<<<<< HEAD
+  @NotBlank(message = "Conference name is required")
+=======
   @NotBlank(message = "Validation failed")
   @jakarta.validation.constraints.Size(max = 255, message = "Validation failed")
+>>>>>>> origin/master
   private String name; // Tên hội nghị
 
   private String acronym; // Tên viết tắt
 
   private String description; // Mô tả hội nghị
 
+  @Pattern(
+      regexp = "SINGLE_BLIND|DOUBLE_BLIND",
+      message = "Review mode must be SINGLE_BLIND or DOUBLE_BLIND")
   private String reviewMode; // Chế độ review (SINGLE_BLIND, DOUBLE_BLIND)
 
-  private List<TopicDTO> topics; // Danh sách các chủ đề
+  private List<@Valid TopicDTO> topics; // Danh sách các chủ đề
 
-  private List<Long> keywordIds; // Danh sách ID các từ khóa
+  private List<@Positive Long> keywordIds; // Danh sách ID các từ khóa
 
-  private List<TrackDTO> tracks; // Danh sách các track (lĩnh vực)
+  private List<@Valid TrackDTO> tracks; // Danh sách các track (lĩnh vực)
 
-  private List<DeadlineDTO> deadlines; // Danh sách các mốc thời gian
+  private List<@Valid DeadlineDTO> deadlines; // Danh sách các mốc thời gian
 
+  @Positive(message = "Chair ID must be positive")
   private Long chairId; // ID của Chair (Chỉ dành cho Admin khi tạo hộ)
 
   public String getName() {
