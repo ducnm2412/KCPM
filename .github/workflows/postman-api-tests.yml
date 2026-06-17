@@ -114,12 +114,78 @@ jobs:
           cat backend.log
           exit 1
 
+      - name: Seed Users test data
+        if: steps.users-tests.outputs.has_tests == 'true'
+        run: |
+          curl -fsS -X POST "http://localhost:8080/api/auth/register" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "email": "author1@ut.edu.vn",
+              "password": "Password123!",
+              "firstName": "Test",
+              "lastName": "Author",
+              "organizationId": 1,
+              "phone": "0901234567"
+            }'
+
+          curl -fsS -X POST "http://localhost:8080/api/auth/register" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "email": "user123@ut.edu.vn",
+              "password": "Password123!",
+              "firstName": "User123",
+              "lastName": "Search",
+              "organizationId": 1,
+              "phone": "0901234568"
+            }'
+
+      - name: Login and export Postman environment
+        if: steps.users-tests.outputs.has_tests == 'true'
+        run: |
+          newman run "postman/UTH-ConfMS API.postman_collection.json" \
+            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            --folder "Login" \
+            --env-var baseUrl="http://localhost:8080" \
+            --export-environment "postman/ci-environment.json"
+
+      - name: Prepare Users Postman data
+        if: steps.users-tests.outputs.has_tests == 'true'
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const env = JSON.parse(fs.readFileSync('postman/ci-environment.json', 'utf8'));
+          const token = env.values.find((item) => item.key === 'accessToken')?.value;
+
+          if (!token) {
+            throw new Error('Missing accessToken from Postman login environment');
+          }
+
+          const files = [
+            'postman/get_me_test_data.json',
+            'postman/update_me_test_data.json',
+            'postman/user_by_Id_test_data.json',
+            'postman/list_users_test_data.json',
+            'postman/search_users_test_data.json'
+          ];
+
+          for (const file of files) {
+            const rows = JSON.parse(fs.readFileSync(file, 'utf8'));
+            for (const row of rows) {
+              if (Object.prototype.hasOwnProperty.call(row, 'token')) {
+                row.token = Number(row.expected_status) === 401 ? '' : token;
+              }
+            }
+            fs.writeFileSync(file, JSON.stringify(rows, null, 2) + '\n');
+          }
+          NODE
+
       - name: Run Users Me tests
         if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           mkdir -p postman/reports
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -e "postman/ci-environment.json" \
             -d "postman/get_me_test_data.json" \
             --folder "Me" \
             --env-var baseUrl="http://localhost:8080" \
@@ -132,7 +198,7 @@ jobs:
         if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -e "postman/ci-environment.json" \
             -d "postman/update_me_test_data.json" \
             --folder "Update Me" \
             --env-var baseUrl="http://localhost:8080" \
@@ -145,7 +211,7 @@ jobs:
         if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -e "postman/ci-environment.json" \
             -d "postman/user_by_Id_test_data.json" \
             --folder "Get User By ID" \
             --env-var baseUrl="http://localhost:8080" \
@@ -158,7 +224,7 @@ jobs:
         if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -e "postman/ci-environment.json" \
             -d "postman/list_users_test_data.json" \
             --folder "List Users" \
             --env-var baseUrl="http://localhost:8080" \
@@ -171,7 +237,7 @@ jobs:
         if: steps.users-tests.outputs.has_tests == 'true'
         run: |
           newman run "postman/UTH-ConfMS API.postman_collection.json" \
-            -e "postman/UTH-ConfMS Local.postman_environment.json" \
+            -e "postman/ci-environment.json" \
             -d "postman/search_users_test_data.json" \
             --folder "Search Users" \
             --env-var baseUrl="http://localhost:8080" \
