@@ -90,6 +90,12 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
   }
 
+  @ExceptionHandler(ConflictException.class)
+  public ResponseEntity<ApiResponse<Object>> handleConflictException(ConflictException e) {
+    log.warn("Conflict: {}", e.getMessage());
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(e.getMessage()));
+  }
+
   @ExceptionHandler(JwtException.class)
   public ResponseEntity<ApiResponse<Object>> handleJwtException(JwtException e) {
     log.warn("JWT error: {}", e.getMessage());

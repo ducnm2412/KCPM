@@ -50,4 +50,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
    */
   // Tìm submission theo conference và author
   List<Submission> findByConferenceIdAndAuthorId(Long conferenceId, Long authorId);
+
+  boolean existsByConferenceIdAndAuthorIdAndTitleIgnoreCaseAndWithdrawnFalse(
+      Long conferenceId, Long authorId, String title);
 }
