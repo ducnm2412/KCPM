@@ -24,12 +24,8 @@ import java.util.List;
  * @version 1.0
  */
 public class ConferenceCreateDTO {
-<<<<<<< HEAD
-  @NotBlank(message = "Conference name is required")
-=======
   @NotBlank(message = "Validation failed")
   @jakarta.validation.constraints.Size(max = 255, message = "Validation failed")
->>>>>>> origin/master
   private String name; // Tên hội nghị
 
   private String acronym; // Tên viết tắt
