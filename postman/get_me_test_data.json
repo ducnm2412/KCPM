@@ -1,10 +1,10 @@
 [
   {
     "test_case": "TC_001_Get_profile_thanh_cong",
-    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJBVVRIT1IiXSwic3ViIjoiYW5odnRuMDQ5MkB1dC5lZHUudm4iLCJpYXQiOjE3ODAwMzk2MzcsImV4cCI6MTc4MDA0MzIzN30.R7upUprxYY9_TidFaQXwl1gKH1_H-xtIpsx0h2HVXCk",
+    "token": "",
     "method": "GET",
     "expected_status": 200,
-    "expected_role": "AUTHOR",
+    "expected_role": "ADMIN",
     "check_fields": true,
     "check_no_password": true,
     "check_content_type": true

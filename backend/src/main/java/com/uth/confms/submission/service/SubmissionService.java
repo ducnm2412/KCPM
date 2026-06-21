@@ -4,6 +4,7 @@ import com.uth.confms.assignment.entity.Assignment;
 import com.uth.confms.assignment.repository.AssignmentRepository;
 import com.uth.confms.auth.service.UserService;
 import com.uth.confms.common.exception.BusinessException;
+import com.uth.confms.common.exception.ConflictException;
 import com.uth.confms.common.exception.ForbiddenException;
 import com.uth.confms.common.exception.NotFoundException;
 import com.uth.confms.common.exception.UnauthorizedException;
@@ -127,10 +128,15 @@ public class SubmissionService {
     // Check if author is Chair or PC (cannot submit to their own conference)
     validateAuthorRole(dto.getConferenceId(), authorId);
 
+    if (submissionRepository.existsByConferenceIdAndAuthorIdAndTitleIgnoreCaseAndWithdrawnFalse(
+        dto.getConferenceId(), authorId, dto.getTitle().trim())) {
+      throw new ConflictException("Duplicate submission");
+    }
+
     Submission submission = Submission.builder()
         .conferenceId(dto.getConferenceId())
         .authorId(authorId)
-        .title(dto.getTitle())
+        .title(dto.getTitle().trim())
         .abstractText(dto.getAbstractText())
         .trackId(dto.getTrackId())
         .keywords(dto.getKeywords())

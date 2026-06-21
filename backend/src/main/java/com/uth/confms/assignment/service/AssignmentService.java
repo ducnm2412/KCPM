@@ -16,6 +16,7 @@ import com.uth.confms.auth.entity.User;
 import com.uth.confms.auth.repository.UserRepository;
 import com.uth.confms.auth.service.AuditLogService;
 import com.uth.confms.common.exception.BusinessException;
+import com.uth.confms.common.exception.ForbiddenException;
 import com.uth.confms.common.exception.NotFoundException;
 import com.uth.confms.common.exception.UnauthorizedException;
 import com.uth.confms.conference.entity.Conference;

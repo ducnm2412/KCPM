@@ -90,6 +90,12 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
   }
 
+  @ExceptionHandler(ConflictException.class)
+  public ResponseEntity<ApiResponse<Object>> handleConflictException(ConflictException e) {
+    log.warn("Conflict: {}", e.getMessage());
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(e.getMessage()));
+  }
+
   @ExceptionHandler(JwtException.class)
   public ResponseEntity<ApiResponse<Object>> handleJwtException(JwtException e) {
     log.warn("JWT error: {}", e.getMessage());
@@ -134,7 +140,6 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error("Validation failed", errors));
   }
 
-<<<<<<< HEAD
   @ExceptionHandler(HttpMessageNotReadableException.class)
   public ResponseEntity<ApiResponse<Map<String, String>>> handleHttpMessageNotReadableException(
       HttpMessageNotReadableException e) {
@@ -193,7 +198,8 @@ public class GlobalExceptionHandler {
     log.warn("HTTP method not supported: {}", e.getMessage());
     return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
         .body(ApiResponse.error(e.getMessage()));
-=======
+  }
+
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   // Xử lý lỗi kiểu dữ liệu không hợp lệ trong path variable hoặc request
   // parameter
@@ -210,7 +216,6 @@ public class GlobalExceptionHandler {
     log.warn("Type mismatch: {}", errorMessage);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error(errorMessage));
->>>>>>> origin/master
   }
 
   @ExceptionHandler(Exception.class)
