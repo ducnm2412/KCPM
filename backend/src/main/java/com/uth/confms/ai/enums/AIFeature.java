@@ -1,36 +1,38 @@
 package com.uth.confms.ai.enums;
 
+import com.uth.confms.auth.enums.RoleName;
+
 /**
  * Enum định nghĩa các tính năng AI có sẵn trong hệ thống.
  * Mỗi tính năng có thể được bật/tắt riêng theo từng conference.
  */
 public enum AIFeature {
     /** Kiểm tra chính tả và ngữ pháp cho title/abstract */
-    SPELL_CHECK("spell_check", "Spell & Grammar Check", "AUTHOR"),
+    SPELL_CHECK("spell_check", "Spell & Grammar Check", RoleName.AUTHOR),
 
     /** Gợi ý cải thiện abstract */
-    ABSTRACT_POLISH("abstract_polish", "Abstract Polishing", "AUTHOR"),
+    ABSTRACT_POLISH("abstract_polish", "Abstract Polishing", RoleName.AUTHOR),
 
     /** Đề xuất keywords từ nội dung bài */
-    KEYWORD_SUGGEST("keyword_suggest", "Keyword Suggestion", "AUTHOR"),
+    KEYWORD_SUGGEST("keyword_suggest", "Keyword Suggestion", RoleName.AUTHOR),
 
     /** Tạo tóm tắt trung lập cho PC bidding */
-    NEUTRAL_SUMMARY("neutral_summary", "Neutral Summary", "PC"),
+    NEUTRAL_SUMMARY("neutral_summary", "Neutral Summary", RoleName.PC),
 
     /** Trích xuất các điểm chính từ abstract */
-    KEY_POINTS("key_points", "Key Point Extraction", "PC"),
+    KEY_POINTS("key_points", "Key Point Extraction", RoleName.PC),
 
     /** Gợi ý độ tương đồng reviewer-paper */
-    SIMILARITY_HINT("similarity_hint", "Reviewer-Paper Similarity", "CHAIR"),
+    SIMILARITY_HINT("similarity_hint", "Reviewer-Paper Similarity", RoleName.CHAIR),
 
     /** Soạn thảo email thông báo */
-    EMAIL_DRAFT("email_draft", "Email Drafting", "CHAIR");
+    EMAIL_DRAFT("email_draft", "Email Drafting", RoleName.CHAIR);
 
     private final String code;
     private final String displayName;
-    private final String primaryRole;
+    private final RoleName primaryRole;
 
-    AIFeature(String code, String displayName, String primaryRole) {
+    AIFeature(String code, String displayName, RoleName primaryRole) {
         this.code = code;
         this.displayName = displayName;
         this.primaryRole = primaryRole;
@@ -44,7 +46,7 @@ public enum AIFeature {
         return displayName;
     }
 
-    public String getPrimaryRole() {
+    public RoleName getPrimaryRole() {
         return primaryRole;
     }
 
