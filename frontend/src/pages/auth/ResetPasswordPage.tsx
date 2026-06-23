@@ -131,25 +131,26 @@ const ResetPasswordPage: React.FC = () => {
 
                         {success ? (
                             <div className="text-center py-3">
-                                <CAlert color="success" className="text-start mb-4">
+                                <CAlert data-testid="reset-password-success" color="success" className="text-start mb-4">
                                     {t('auth.resetPasswordSuccess') || 'Mật khẩu của bạn đã được thay đổi thành công. Đang chuyển hướng đến trang đăng nhập...'}
                                 </CAlert>
                                 <CSpinner style={{ color: colors.teal }} />
                             </div>
                         ) : (
-                            <CForm onSubmit={handleSubmit}>
+                            <CForm data-testid="reset-password-form" onSubmit={handleSubmit}>
                                 <p className="text-muted text-center mb-4">
                                     {t('auth.resetPasswordDesc') || 'Vui lòng nhập mật khẩu mới cho tài khoản của bạn.'}
                                 </p>
 
                                 {error && (
-                                    <CAlert color="danger" className="mb-3">
+                                    <CAlert data-testid="reset-password-error" color="danger" className="mb-3">
                                         {error}
                                     </CAlert>
                                 )}
 
                                 <div className="mb-3">
                                     <CFormInput
+                                        data-testid="reset-password-new"
                                         type="password"
                                         placeholder="Mật khẩu mới"
                                         value={newPassword}
@@ -161,6 +162,7 @@ const ResetPasswordPage: React.FC = () => {
 
                                 <div className="mb-3">
                                     <CFormInput
+                                        data-testid="reset-password-confirm"
                                         type="password"
                                         placeholder="Xác nhận mật khẩu mới"
                                         value={confirmPassword}
@@ -171,7 +173,7 @@ const ResetPasswordPage: React.FC = () => {
                                 </div>
 
                                 <div className="d-grid gap-2">
-                                    <CButton type="submit" style={styles.btnSubmit} disabled={loading || !token}>
+                                    <CButton data-testid="reset-password-submit" type="submit" style={styles.btnSubmit} disabled={loading || !token}>
                                         {loading ? <CSpinner size="sm" /> : 'XÁC NHẬN ĐỔI MẬT KHẨU'}
                                     </CButton>
                                 </div>

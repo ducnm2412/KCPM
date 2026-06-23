@@ -142,18 +142,18 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
   }
 
   return (
-    <div>
+    <div data-testid="author-editor">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h6>{t('submission.authors') || 'Tác giả'}</h6>
-        <CButton color="primary" size="sm" onClick={handleAdd}>
+        <CButton data-testid="author-add" color="primary" size="sm" onClick={handleAdd}>
           <CIcon icon={cilPlus} /> {t('submission.addAuthor') || 'Thêm tác giả'}
         </CButton>
       </div>
 
       {authors.length === 0 ? (
-        <p className="text-muted">{t('submission.noAuthors') || 'Chưa có tác giả nào'}</p>
+        <p data-testid="author-empty" className="text-muted">{t('submission.noAuthors') || 'Chưa có tác giả nào'}</p>
       ) : (
-        <CTable hover responsive>
+        <CTable data-testid="author-table" hover responsive>
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell style={{ width: '50px' }}>#</CTableHeaderCell>
@@ -166,7 +166,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
           </CTableHead>
           <CTableBody>
             {authors.map((author, index) => (
-              <CTableRow key={index}>
+              <CTableRow key={index} data-testid={`author-row-${index}`}>
                 <CTableDataCell>{index + 1}</CTableDataCell>
                 <CTableDataCell>
                   {author.firstName} {author.lastName}
@@ -182,6 +182,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
                     <CButton
                       color="link"
                       size="sm"
+                      data-testid={`author-set-corresponding-${index}`}
                       onClick={() => handleSetCorresponding(index)}
                     >
                       {t('submission.setCorresponding') || 'Đặt làm tác giả liên hệ'}
@@ -193,6 +194,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
                     <CButton
                       color="link"
                       size="sm"
+                      data-testid={`author-move-up-${index}`}
                       onClick={() => handleMoveUp(index)}
                       disabled={index === 0}
                       title={t('submission.moveUp') || 'Lên'}
@@ -202,6 +204,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
                     <CButton
                       color="link"
                       size="sm"
+                      data-testid={`author-move-down-${index}`}
                       onClick={() => handleMoveDown(index)}
                       disabled={index === authors.length - 1}
                       title={t('submission.moveDown') || 'Xuống'}
@@ -211,6 +214,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
                     <CButton
                       color="primary"
                       size="sm"
+                      data-testid={`author-edit-${index}`}
                       onClick={() => handleEdit(index)}
                       title={t('common.edit') || 'Sửa'}
                     >
@@ -219,6 +223,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
                     <CButton
                       color="danger"
                       size="sm"
+                      data-testid={`author-delete-${index}`}
                       onClick={() => handleDelete(index)}
                       title={t('common.delete') || 'Xóa'}
                     >
@@ -247,6 +252,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
                 {t('submission.firstName') || 'Họ'} <span className="text-danger">*</span>
               </CFormLabel>
               <CFormInput
+                data-testid="author-first-name"
                 type="text"
                 value={formData.firstName}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
@@ -259,6 +265,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
                 {t('submission.lastName') || 'Tên'} <span className="text-danger">*</span>
               </CFormLabel>
               <CFormInput
+                data-testid="author-last-name"
                 type="text"
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
@@ -270,6 +277,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
           <div className="mb-3">
             <CFormLabel>{t('submission.email') || 'Email'}</CFormLabel>
             <CFormInput
+              data-testid="author-email"
               type="email"
               value={formData.email || ''}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -287,6 +295,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
           </div>
           <div className="mb-3">
             <CFormCheck
+              data-testid="author-corresponding"
               type="checkbox"
               id="isCorresponding"
               label={t('submission.correspondingAuthor') || 'Tác giả liên hệ'}
@@ -300,10 +309,10 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
           </div>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setShowModal(false)}>
+          <CButton data-testid="author-cancel" color="secondary" onClick={() => setShowModal(false)}>
             {t('common.cancel') || 'Hủy'}
           </CButton>
-          <CButton color="primary" onClick={handleSave}>
+          <CButton data-testid="author-save" color="primary" onClick={handleSave}>
             {t('common.save') || 'Lưu'}
           </CButton>
         </CModalFooter>

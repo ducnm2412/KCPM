@@ -79,18 +79,18 @@ const TrackEditor: React.FC<TrackEditorProps> = ({ tracks, onChange }) => {
   }
 
   return (
-    <div>
+    <div data-testid="track-editor">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h6>{t('conference.tracks')}</h6>
-        <CButton color="primary" size="sm" onClick={handleAdd}>
+        <CButton data-testid="track-add" color="primary" size="sm" onClick={handleAdd}>
           <CIcon icon={cilPlus} /> {t('conference.addTrack')}
         </CButton>
       </div>
 
       {tracks.length === 0 ? (
-        <p className="text-muted">{t('conference.noTracks')}</p>
+        <p data-testid="track-empty" className="text-muted">{t('conference.noTracks')}</p>
       ) : (
-        <CTable hover responsive>
+        <CTable data-testid="track-table" hover responsive>
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell>{t('conference.trackName')}</CTableHeaderCell>
@@ -101,7 +101,7 @@ const TrackEditor: React.FC<TrackEditorProps> = ({ tracks, onChange }) => {
           </CTableHead>
           <CTableBody>
             {tracks.map((track, index) => (
-              <CTableRow key={index}>
+              <CTableRow key={index} data-testid={`track-row-${index}`}>
                 <CTableDataCell>{track.name}</CTableDataCell>
                 <CTableDataCell>{track.description || '-'}</CTableDataCell>
                 <CTableDataCell>
@@ -116,11 +116,12 @@ const TrackEditor: React.FC<TrackEditorProps> = ({ tracks, onChange }) => {
                     color="primary"
                     size="sm"
                     className="me-2"
+                    data-testid={`track-edit-${index}`}
                     onClick={() => handleEdit(index)}
                   >
                     <CIcon icon={cilPencil} />
                   </CButton>
-                  <CButton color="danger" size="sm" onClick={() => handleDelete(index)}>
+                  <CButton data-testid={`track-delete-${index}`} color="danger" size="sm" onClick={() => handleDelete(index)}>
                     <CIcon icon={cilTrash} />
                   </CButton>
                 </CTableDataCell>
@@ -144,6 +145,7 @@ const TrackEditor: React.FC<TrackEditorProps> = ({ tracks, onChange }) => {
               {t('conference.trackName') || 'Tên Track'} <span className="text-danger">*</span>
             </CFormLabel>
             <CFormInput
+              data-testid="track-name"
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -154,6 +156,7 @@ const TrackEditor: React.FC<TrackEditorProps> = ({ tracks, onChange }) => {
           <div className="mb-3">
             <CFormLabel>{t('conference.description') || 'Mô tả'}</CFormLabel>
             <CFormTextarea
+              data-testid="track-description"
               value={formData.description || ''}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
@@ -162,6 +165,7 @@ const TrackEditor: React.FC<TrackEditorProps> = ({ tracks, onChange }) => {
           </div>
           <div className="mb-3">
             <CFormCheck
+              data-testid="track-active"
               type="checkbox"
               id="trackActive"
               label={t('conference.active')}
@@ -171,10 +175,10 @@ const TrackEditor: React.FC<TrackEditorProps> = ({ tracks, onChange }) => {
           </div>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setShowModal(false)}>
+          <CButton data-testid="track-cancel" color="secondary" onClick={() => setShowModal(false)}>
             {t('common.cancel') || 'Hủy'}
           </CButton>
-          <CButton color="primary" onClick={handleSave}>
+          <CButton data-testid="track-save" color="primary" onClick={handleSave}>
             {t('common.save') || 'Lưu'}
           </CButton>
         </CModalFooter>

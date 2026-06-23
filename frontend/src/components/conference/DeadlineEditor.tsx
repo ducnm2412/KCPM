@@ -129,18 +129,18 @@ const DeadlineEditor: React.FC<DeadlineEditorProps> = ({ deadlines, onChange }) 
   }
 
   return (
-    <div>
+    <div data-testid="deadline-editor">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h6>{t('conference.deadlines') || 'Deadlines'}</h6>
-        <CButton color="primary" size="sm" onClick={handleAdd}>
+        <CButton data-testid="deadline-add" color="primary" size="sm" onClick={handleAdd}>
           <CIcon icon={cilPlus} /> {t('conference.addDeadline') || 'Thêm Deadline'}
         </CButton>
       </div>
 
       {deadlines.length === 0 ? (
-        <p className="text-muted">{t('conference.noDeadlines')}</p>
+        <p data-testid="deadline-empty" className="text-muted">{t('conference.noDeadlines')}</p>
       ) : (
-        <CTable hover responsive>
+        <CTable data-testid="deadline-table" hover responsive>
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell>{t('conference.deadlineType') || 'Loại'}</CTableHeaderCell>
@@ -152,7 +152,7 @@ const DeadlineEditor: React.FC<DeadlineEditorProps> = ({ deadlines, onChange }) 
           </CTableHead>
           <CTableBody>
             {deadlines.map((deadline, index) => (
-              <CTableRow key={index}>
+              <CTableRow key={index} data-testid={`deadline-row-${index}`}>
                 <CTableDataCell>{getTypeLabel(deadline.type)}</CTableDataCell>
                 <CTableDataCell>{formatDate(deadline.dueDate)}</CTableDataCell>
                 <CTableDataCell>{deadline.description || '-'}</CTableDataCell>
@@ -172,11 +172,12 @@ const DeadlineEditor: React.FC<DeadlineEditorProps> = ({ deadlines, onChange }) 
                     color="primary"
                     size="sm"
                     className="me-2"
+                    data-testid={`deadline-edit-${index}`}
                     onClick={() => handleEdit(index)}
                   >
                     <CIcon icon={cilPencil} />
                   </CButton>
-                  <CButton color="danger" size="sm" onClick={() => handleDelete(index)}>
+                  <CButton data-testid={`deadline-delete-${index}`} color="danger" size="sm" onClick={() => handleDelete(index)}>
                     <CIcon icon={cilTrash} />
                   </CButton>
                 </CTableDataCell>
@@ -200,6 +201,7 @@ const DeadlineEditor: React.FC<DeadlineEditorProps> = ({ deadlines, onChange }) 
               {t('conference.deadlineType') || 'Loại Deadline'} <span className="text-danger">*</span>
             </CFormLabel>
             <CFormSelect
+              data-testid="deadline-type"
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value as Deadline['type'] })}
               required
@@ -216,6 +218,7 @@ const DeadlineEditor: React.FC<DeadlineEditorProps> = ({ deadlines, onChange }) 
               {t('conference.dueDate') || 'Hạn chót'} <span className="text-danger">*</span>
             </CFormLabel>
             <CFormInput
+              data-testid="deadline-due-date"
               type="datetime-local"
               value={formData.dueDate}
               onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
@@ -225,6 +228,7 @@ const DeadlineEditor: React.FC<DeadlineEditorProps> = ({ deadlines, onChange }) 
           <div className="mb-3">
             <CFormLabel>{t('conference.description') || 'Mô tả'}</CFormLabel>
             <CFormTextarea
+              data-testid="deadline-description"
               value={formData.description || ''}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
@@ -233,6 +237,7 @@ const DeadlineEditor: React.FC<DeadlineEditorProps> = ({ deadlines, onChange }) 
           </div>
           <div className="mb-3">
             <CFormCheck
+              data-testid="deadline-hard"
               type="checkbox"
               id="hardDeadline"
               label={t('conference.hardDeadline') || 'Hard Deadline (không cho phép nộp sau hạn)'}
@@ -242,10 +247,10 @@ const DeadlineEditor: React.FC<DeadlineEditorProps> = ({ deadlines, onChange }) 
           </div>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setShowModal(false)}>
+          <CButton data-testid="deadline-cancel" color="secondary" onClick={() => setShowModal(false)}>
             {t('common.cancel') || 'Hủy'}
           </CButton>
-          <CButton color="primary" onClick={handleSave}>
+          <CButton data-testid="deadline-save" color="primary" onClick={handleSave}>
             {t('common.save') || 'Lưu'}
           </CButton>
         </CModalFooter>

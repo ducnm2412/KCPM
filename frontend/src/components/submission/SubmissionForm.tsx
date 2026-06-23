@@ -221,9 +221,9 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   }
 
   return (
-    <CForm onSubmit={handleSubmit}>
+    <CForm data-testid="submission-form" onSubmit={handleSubmit}>
       {error && (
-        <CAlert color="danger" className="mb-3">
+        <CAlert data-testid="submission-error" color="danger" className="mb-3">
           {error}
         </CAlert>
       )}
@@ -231,6 +231,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       <div className="mb-3">
         <CFormLabel>Tiêu đề *</CFormLabel>
         <CFormInput
+          data-testid="submission-title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -250,6 +251,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
           ]}
         />
         <CFormTextarea
+          data-testid="submission-abstract"
           value={abstract}
           onChange={(e) => setAbstract(e.target.value)}
           required
@@ -268,6 +270,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
           ]}
         />
         <CFormInput
+          data-testid="submission-keywords"
           type="text"
           value={keywords}
           onChange={(e) => setKeywords(e.target.value)}
@@ -279,6 +282,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         <div className="mb-3">
           <CFormLabel>Lĩnh vực</CFormLabel>
           <select
+            data-testid="submission-track"
             className="form-select"
             value={trackId || ''}
             onChange={(e) => setTrackId(e.target.value ? parseInt(e.target.value) : undefined)}
@@ -302,6 +306,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         <div className="mb-3">
           <CFormLabel>File PDF (tùy chọn)</CFormLabel>
           <CFormInput
+            data-testid="submission-pdf-file"
             type="file"
             accept=".pdf"
             onChange={(e) => {
@@ -323,6 +328,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         <div className="mb-3">
           <CFormLabel>File PDF mới (tùy chọn)</CFormLabel>
           <CFormInput
+            data-testid="submission-pdf-file"
             type="file"
             accept=".pdf"
             onChange={(e) => {
@@ -341,10 +347,10 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       )}
 
       <div className="d-flex justify-content-end gap-2">
-        <CButton color="secondary" onClick={onCancel} disabled={loading}>
+        <CButton data-testid="submission-cancel" color="secondary" onClick={onCancel} disabled={loading}>
           Hủy
         </CButton>
-        <CButton color="primary" type="submit" disabled={loading}>
+        <CButton data-testid="submission-submit" color="primary" type="submit" disabled={loading}>
           {loading ? <CSpinner size="sm" /> : 'Lưu'}
         </CButton>
       </div>

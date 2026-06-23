@@ -86,9 +86,9 @@ const CreateConferencePage: React.FC = () => {
           <h5>{t('conference.basicInformation') || 'Thông tin cơ bản'}</h5>
         </CCardHeader>
         <CCardBody>
-          <CForm onSubmit={handleSubmit}>
+          <CForm data-testid="conference-create-form" onSubmit={handleSubmit}>
             {error && (
-              <CAlert color="danger" className="mb-3">
+              <CAlert data-testid="conference-create-error" color="danger" className="mb-3">
                 {error}
               </CAlert>
             )}
@@ -98,6 +98,7 @@ const CreateConferencePage: React.FC = () => {
                 {t('conference.name') || 'Tên hội nghị'} <span className="text-danger">*</span>
               </CFormLabel>
               <CFormInput
+                data-testid="conference-name"
                 type="text"
                 name="name"
                 value={formData.name}
@@ -128,6 +129,7 @@ const CreateConferencePage: React.FC = () => {
             <div className="mb-3">
               <CFormLabel>{t('conference.acronym') || 'Tên viết tắt'}</CFormLabel>
               <CFormInput
+                data-testid="conference-acronym"
                 type="text"
                 name="acronym"
                 value={formData.acronym}
@@ -139,6 +141,7 @@ const CreateConferencePage: React.FC = () => {
             <div className="mb-3">
               <CFormLabel>{t('conference.description') || 'Mô tả'}</CFormLabel>
               <CFormTextarea
+                data-testid="conference-description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
@@ -149,7 +152,7 @@ const CreateConferencePage: React.FC = () => {
 
             <div className="mb-3">
               <CFormLabel>{t('conference.reviewMode') || 'Chế độ review'}</CFormLabel>
-              <CFormSelect name="reviewMode" value={formData.reviewMode} onChange={handleChange}>
+              <CFormSelect data-testid="conference-review-mode" name="reviewMode" value={formData.reviewMode} onChange={handleChange}>
                 <option value="SINGLE_BLIND">{t('conference.singleBlind') || 'Single Blind'}</option>
                 <option value="DOUBLE_BLIND">{t('conference.doubleBlind') || 'Double Blind'}</option>
               </CFormSelect>
@@ -160,7 +163,7 @@ const CreateConferencePage: React.FC = () => {
             </div>
 
             <div className="d-flex gap-2">
-              <CButton type="submit" color="primary" disabled={loading}>
+              <CButton data-testid="conference-create-submit" type="submit" color="primary" disabled={loading}>
                 {loading ? (
                   <>
                     <CSpinner size="sm" className="me-2" />
@@ -171,6 +174,7 @@ const CreateConferencePage: React.FC = () => {
                 )}
               </CButton>
               <CButton
+                data-testid="conference-create-cancel"
                 type="button"
                 color="secondary"
                 onClick={() => navigate('/app/chair/conferences')}

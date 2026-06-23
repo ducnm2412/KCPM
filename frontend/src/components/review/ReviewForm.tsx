@@ -197,23 +197,24 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         )}
 
         {error && (
-          <CAlert color="danger" className="mb-3">
+          <CAlert data-testid="review-error" color="danger" className="mb-3">
             {error}
           </CAlert>
         )}
 
         {(isDeadlinePassed || !canEdit) && (
-          <CAlert color="warning" className="mb-3">
+          <CAlert data-testid="review-locked-warning" color="warning" className="mb-3">
             Hạn chót đã qua hoặc review đã được submit. Bạn không thể chỉnh sửa.
           </CAlert>
         )}
 
-        <CForm onSubmit={handleSubmit}>
+        <CForm data-testid="review-form" onSubmit={handleSubmit}>
           <div className="mb-3">
             <CFormLabel>
               Tóm tắt <span className="text-danger">*</span>
             </CFormLabel>
             <CFormTextarea
+              data-testid="review-summary"
               value={summary}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSummary(e.target.value)}
               required
@@ -228,6 +229,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               Điểm đánh giá <span className="text-danger">*</span>
             </CFormLabel>
             <CFormSelect
+              data-testid="review-score"
               value={score}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                 setScore(e.target.value as ReviewScore)
@@ -251,6 +253,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               Nhận xét <span className="text-danger">*</span>
             </CFormLabel>
             <CFormTextarea
+              data-testid="review-comments"
               value={comments}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setComments(e.target.value)
@@ -265,6 +268,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           <div className="mb-3">
             <CFormLabel>Điểm mạnh</CFormLabel>
             <CFormTextarea
+              data-testid="review-strengths"
               value={strengths}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setStrengths(e.target.value)
@@ -278,6 +282,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           <div className="mb-3">
             <CFormLabel>Điểm yếu</CFormLabel>
             <CFormTextarea
+              data-testid="review-weaknesses"
               value={weaknesses}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setWeaknesses(e.target.value)
@@ -291,6 +296,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           <div className="mb-3">
             <CFormLabel>Đánh giá tổng thể (1-5)</CFormLabel>
             <CFormInput
+              data-testid="review-overall-rating"
               type="number"
               min="1"
               max="5"
@@ -306,6 +312,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           <div className="mb-3">
             <CFormLabel>Độ tin cậy (1-5)</CFormLabel>
             <CFormInput
+              data-testid="review-confidence"
               type="number"
               min="1"
               max="5"
@@ -320,6 +327,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
           <div className="mb-3">
             <CFormCheck
+              data-testid="review-confidential"
               type="checkbox"
               id="isConfidential"
               label="Đánh giá bảo mật (chỉ chair/PC thấy, author không thấy)"
@@ -332,13 +340,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           </div>
 
           <div className="d-flex justify-content-between gap-2">
-            <CButton color="secondary" onClick={onCancel} disabled={loading}>
+            <CButton data-testid="review-cancel" color="secondary" onClick={onCancel} disabled={loading}>
               Hủy
             </CButton>
             <div className="d-flex gap-2">
               <CButton
                 color="primary"
                 type="submit"
+                data-testid="review-save"
                 disabled={loading || isDeadlinePassed || !canEdit}
               >
                 {loading ? (
@@ -352,6 +361,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               {review?.id && canEdit && (
                 <CButton
                   color="success"
+                  data-testid="review-finalize"
                   onClick={async () => {
                     if (
                       window.confirm(

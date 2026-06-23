@@ -153,7 +153,7 @@ const ManualAssignmentForm: React.FC<ManualAssignmentFormProps> = ({
       </CModalHeader>
       <CModalBody>
         {error && (
-          <CAlert color="danger" className="mb-3" onClose={() => setError('')} dismissible>
+          <CAlert data-testid="assignment-error" color="danger" className="mb-3" onClose={() => setError('')} dismissible>
             {error}
           </CAlert>
         )}
@@ -164,6 +164,7 @@ const ManualAssignmentForm: React.FC<ManualAssignmentFormProps> = ({
             <CSpinner size="sm" />
           ) : (
             <CFormSelect
+              data-testid="assignment-reviewer"
               value={selectedReviewerId || ''}
               onChange={(e) => setSelectedReviewerId(parseInt(e.target.value) || null)}
             >
@@ -183,7 +184,7 @@ const ManualAssignmentForm: React.FC<ManualAssignmentFormProps> = ({
 
         {selectedReviewerId && workloads[selectedReviewerId] && (
           <div className="mb-3">
-            <CAlert color="info">
+            <CAlert data-testid="assignment-workload" color="info">
               <strong>Workload hiện tại:</strong>
               <br />
               Tổng assignments: {workloads[selectedReviewerId].totalAssignments} /{' '}
@@ -191,12 +192,12 @@ const ManualAssignmentForm: React.FC<ManualAssignmentFormProps> = ({
               <br />
               Trạng thái: {getWorkloadBadge(workloads[selectedReviewerId].workloadStatus)}
               {workloads[selectedReviewerId].workloadStatus === 'OVERLOADED' && (
-                <CAlert color="danger" className="mt-2">
+                <CAlert data-testid="assignment-workload-overloaded" color="danger" className="mt-2">
                   Reviewer này đã quá tải và không thể được assign thêm.
                 </CAlert>
               )}
               {workloads[selectedReviewerId].workloadStatus === 'HIGH' && (
-                <CAlert color="warning" className="mt-2">
+                <CAlert data-testid="assignment-workload-high" color="warning" className="mt-2">
                   Reviewer này đang có workload cao.
                 </CAlert>
               )}
@@ -206,6 +207,7 @@ const ManualAssignmentForm: React.FC<ManualAssignmentFormProps> = ({
 
         <div className="mb-3">
           <CFormCheck
+            data-testid="assignment-primary"
             id="isPrimary"
             label="Đánh dấu là Primary Reviewer"
             checked={isPrimary}
@@ -214,10 +216,11 @@ const ManualAssignmentForm: React.FC<ManualAssignmentFormProps> = ({
         </div>
       </CModalBody>
       <CModalFooter>
-        <CButton color="secondary" onClick={handleClose} disabled={loading}>
+        <CButton data-testid="assignment-cancel" color="secondary" onClick={handleClose} disabled={loading}>
           Hủy
         </CButton>
         <CButton
+          data-testid="assignment-submit"
           color="primary"
           onClick={handleSubmit}
           disabled={loading || !selectedReviewerId || loadingMembers}

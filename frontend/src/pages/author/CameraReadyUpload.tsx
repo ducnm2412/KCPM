@@ -170,7 +170,7 @@ const CameraReadyUpload: React.FC = () => {
   if (!submission) {
     return (
       <div className="container-lg mt-4">
-        <CAlert color="danger">
+        <CAlert data-testid="camera-ready-error" color="danger">
           {error || 'Không tìm thấy thông tin camera-ready cho bài báo này.'}
         </CAlert>
         <CButton color="secondary" onClick={() => navigate(-1)}>
@@ -192,8 +192,8 @@ const CameraReadyUpload: React.FC = () => {
           </div>
         </CCardHeader>
         <CCardBody>
-          {error && <CAlert color="danger" dismissible onClose={() => setError('')}>{error}</CAlert>}
-          {success && <CAlert color="success" dismissible onClose={() => setSuccess('')}>{success}</CAlert>}
+          {error && <CAlert data-testid="camera-ready-error" color="danger" dismissible onClose={() => setError('')}>{error}</CAlert>}
+          {success && <CAlert data-testid="camera-ready-success" color="success" dismissible onClose={() => setSuccess('')}>{success}</CAlert>}
 
           <div className="row">
             <div className="col-md-6">
@@ -209,14 +209,14 @@ const CameraReadyUpload: React.FC = () => {
             <div className="col-md-6 border-start">
               <h5>Tải lên phiên bản mới</h5>
               {!submission.canUpload ? (
-                <CAlert color="warning">Quy trình nộp bản thảo cuối đã đóng hoặc bài báo chưa sẵn sàng.</CAlert>
+                <CAlert data-testid="camera-ready-upload-closed" color="warning">Quy trình nộp bản thảo cuối đã đóng hoặc bài báo chưa sẵn sàng.</CAlert>
               ) : (
-                <CForm onSubmit={handleUpload}>
+                <CForm data-testid="camera-ready-upload-form" onSubmit={handleUpload}>
                   <div className="mb-3">
                     <CFormLabel>Chọn file PDF (Tối đa 20MB)</CFormLabel>
-                    <CFormInput type="file" accept=".pdf" onChange={handleFileChange} required />
+                    <CFormInput data-testid="camera-ready-file" type="file" accept=".pdf" onChange={handleFileChange} required />
                   </div>
-                  <CButton type="submit" color="primary" disabled={uploading || !file}>
+                  <CButton data-testid="camera-ready-upload-submit" type="submit" color="primary" disabled={uploading || !file}>
                     {uploading ? <CSpinner size="sm" /> : 'Tải lên phiên bản mới'}
                   </CButton>
                 </CForm>
@@ -269,6 +269,7 @@ const CameraReadyUpload: React.FC = () => {
           <div className="p-3 bg-light rounded shadow-sm border">
             <p>Tôi xác nhận rằng tôi là tác giả (hoặc được ủy quyền bởi tất cả các tác giả) của bài báo này và đồng ý chuyển giao quyền xuất bản cho nhà tổ chức hội nghị theo quy định.</p>
             <CFormCheck
+              data-testid="camera-ready-copyright"
               id="copyrightCheck"
               label="Tôi đồng ý với các điều khoản bản quyền"
               disabled={submission.copyrightConfirmed || !submission.canConfirmCopyright}
@@ -278,6 +279,7 @@ const CameraReadyUpload: React.FC = () => {
             />
             {!submission.copyrightConfirmed && (
               <CButton
+                data-testid="camera-ready-confirm-copyright"
                 color="warning"
                 disabled={confirming || !copyrightAccepted || !submission.canConfirmCopyright}
                 onClick={handleConfirmCopyright}

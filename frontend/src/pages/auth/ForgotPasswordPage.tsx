@@ -124,10 +124,11 @@ const ForgotPasswordPage: React.FC = () => {
 
                         {success ? (
                             <div className="text-center py-3">
-                                <CAlert color="success" className="text-start mb-4">
+                                <CAlert data-testid="forgot-password-success" color="success" className="text-start mb-4">
                                     {t('auth.forgotPasswordSuccess') || 'Một liên kết đặt lại mật khẩu đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (và thư rác).'}
                                 </CAlert>
                                 <CButton
+                                    data-testid="forgot-password-back-login"
                                     style={{ backgroundColor: colors.teal, borderColor: colors.teal, color: '#fff' }}
                                     onClick={() => navigate('/login')}
                                     className="w-100"
@@ -136,19 +137,20 @@ const ForgotPasswordPage: React.FC = () => {
                                 </CButton>
                             </div>
                         ) : (
-                            <CForm onSubmit={handleSubmit}>
+                            <CForm data-testid="forgot-password-form" onSubmit={handleSubmit}>
                                 <p className="text-muted text-center mb-4">
                                     {t('auth.forgotPasswordDesc') || 'Nhập địa chỉ email của bạn và chúng tôi sẽ gửi liên kết để đặt lại mật khẩu.'}
                                 </p>
 
                                 {error && (
-                                    <CAlert color="danger" className="mb-3">
+                                    <CAlert data-testid="forgot-password-error" color="danger" className="mb-3">
                                         {error}
                                     </CAlert>
                                 )}
 
                                 <div className="mb-3">
                                     <CFormInput
+                                        data-testid="forgot-password-email"
                                         type="email"
                                         placeholder="Địa chỉ email của bạn"
                                         value={email}
@@ -159,7 +161,7 @@ const ForgotPasswordPage: React.FC = () => {
                                 </div>
 
                                 <div className="d-grid gap-2">
-                                    <CButton type="submit" style={styles.btnSubmit} disabled={loading}>
+                                    <CButton data-testid="forgot-password-submit" type="submit" style={styles.btnSubmit} disabled={loading}>
                                         {loading ? <CSpinner size="sm" /> : 'GỬI YÊU CẦU'}
                                     </CButton>
                                 </div>
