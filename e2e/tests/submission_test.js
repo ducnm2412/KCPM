@@ -51,8 +51,16 @@ const uniqueEmail = (prefix) => `codecept.${prefix}.${Date.now()}@example.com`;
 
 const clearBrowserState = async (I) => {
   await I.executeScript(() => {
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    try {
+      window.localStorage.clear();
+    } catch {
+      // Some browser contexts (for example about:blank) deny storage access.
+    }
+    try {
+      window.sessionStorage.clear();
+    } catch {
+      // Keep navigation resilient; tests will still establish a fresh session.
+    }
   });
 };
 
