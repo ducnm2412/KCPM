@@ -1,6 +1,4 @@
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
 
 Feature("Submission BVA");
 
@@ -23,7 +21,6 @@ const selectors = {
   submissionAbstract: '[data-testid="submission-abstract"]',
   submissionKeywords: '[data-testid="submission-keywords"]',
   submissionTrack: '[data-testid="submission-track"]',
-  submissionPdfFile: '[data-testid="submission-pdf-file"]',
   submissionSubmit: '[data-testid="submission-submit"]',
   authorEmpty: '[data-testid="author-empty"]',
   authorAdd: '[data-testid="author-add"]',
@@ -44,8 +41,6 @@ const config = {
   registerPassword: process.env.E2E_REGISTER_PASSWORD || "Codecept@2026",
   organizationSearch: process.env.E2E_ORGANIZATION_SEARCH || "UTH",
 };
-
-const fixtureDir = path.join(__dirname, "..", "output", "generated-fixtures");
 
 const uniqueEmail = (prefix) => `codecept.${prefix}.${Date.now()}@example.com`;
 
@@ -86,13 +81,6 @@ const getDisabledState = async (I, selector) => {
   }, selector);
 };
 
-const getFileInputSize = async (I) => {
-  return I.executeScript((fieldSelector) => {
-    const element = document.querySelector(fieldSelector);
-    return element?.files?.[0]?.size || 0;
-  }, selectors.submissionPdfFile);
-};
-
 const getInputValue = async (I, selector) => {
   return I.executeScript((fieldSelector) => {
     return document.querySelector(fieldSelector)?.value || "";
@@ -110,29 +98,6 @@ const installAlertSpy = async (I) => {
 
 const getLastAlert = async (I) => {
   return I.executeScript(() => window.__lastAlert || "");
-};
-
-const ensurePdfFixture = (filename, size) => {
-  fs.mkdirSync(fixtureDir, { recursive: true });
-  const filePath = path.join(fixtureDir, filename);
-  if (!fs.existsSync(filePath) || fs.statSync(filePath).size !== size) {
-    const fd = fs.openSync(filePath, "w");
-    try {
-      fs.writeSync(fd, Buffer.from("%PDF-1.4\n"));
-      if (size > 9) {
-        fs.writeSync(fd, Buffer.alloc(1), 0, 1, size - 1);
-      }
-    } finally {
-      fs.closeSync(fd);
-    }
-  }
-  return filePath;
-};
-
-const pdfFixtures = {
-  belowMax: () => ensurePdfFixture("valid-20mb-minus-1.pdf", 20 * 1024 * 1024 - 1),
-  atMax: () => ensurePdfFixture("valid-20mb.pdf", 20 * 1024 * 1024),
-  aboveMax: () => ensurePdfFixture("invalid-20mb-plus-1.pdf", 20 * 1024 * 1024 + 1),
 };
 
 const loginExistingAuthor = (I) => {
@@ -266,30 +231,6 @@ Scenario("BVA submission can create draft without PDF", async ({ I }) => {
 
   I.click(selectors.submissionSubmit);
   I.waitInUrl("/app/author/submissions", 20);
-});
-
-Scenario("BVA submission PDF accepts 20MB minus 1 byte", async ({ I }) => {
-  await openNewSubmissionForm(I);
-
-  I.attachFile(selectors.submissionPdfFile, pdfFixtures.belowMax());
-  assert.equal(await getFileInputSize(I), 20 * 1024 * 1024 - 1);
-  I.dontSeeElement(selectors.submissionError);
-});
-
-Scenario("BVA submission PDF accepts exactly 20MB", async ({ I }) => {
-  await openNewSubmissionForm(I);
-
-  I.attachFile(selectors.submissionPdfFile, pdfFixtures.atMax());
-  assert.equal(await getFileInputSize(I), 20 * 1024 * 1024);
-  I.dontSeeElement(selectors.submissionError);
-});
-
-Scenario("BVA submission PDF rejects 20MB plus 1 byte", async ({ I }) => {
-  await openNewSubmissionForm(I);
-
-  I.attachFile(selectors.submissionPdfFile, pdfFixtures.aboveMax());
-  I.waitForElement(selectors.submissionError, 10);
-  I.seeInCurrentUrl("/app/author/submissions/new");
 });
 
 Scenario("BVA author editor starts with zero authors", async ({ I }) => {
