@@ -300,7 +300,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               type="number"
               min="1"
               max="5"
-              value={overallRating || ''}
+              value={overallRating ?? ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setOverallRating(e.target.value ? parseInt(e.target.value) : undefined)
               }
@@ -316,7 +316,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               type="number"
               min="1"
               max="5"
-              value={confidence || ''}
+              value={confidence ?? ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setConfidence(e.target.value ? parseInt(e.target.value) : undefined)
               }
