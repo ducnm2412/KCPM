@@ -134,8 +134,10 @@ Scenario("BVA 6: Reorder Move Up/Down disabled state", async ({ I }) => {
   I.click(sels.saveBtn);
   I.waitForElement(sels.row0, 5);
   
-  assert.equal(await I.grabAttributeFrom(sels.up0, 'disabled'), true);
-  assert.equal(await I.grabAttributeFrom(sels.down0, 'disabled'), true);
+  const isDis = async (sel) => await I.executeScript((s) => document.querySelector(s).disabled, sel);
+  
+  assert.equal(await isDis(sels.up0), true);
+  assert.equal(await isDis(sels.down0), true);
   
   I.click(sels.addBtn);
   I.waitForElement(sels.fName, 5);
@@ -144,11 +146,11 @@ Scenario("BVA 6: Reorder Move Up/Down disabled state", async ({ I }) => {
   I.click(sels.saveBtn);
   I.waitForElement(sels.row1, 5);
   
-  assert.equal(await I.grabAttributeFrom(sels.up0, 'disabled'), true);
-  assert.equal(await I.grabAttributeFrom(sels.down0, 'disabled'), null); 
+  assert.equal(await isDis(sels.up0), true);
+  assert.equal(await isDis(sels.down0), false); 
   
-  assert.equal(await I.grabAttributeFrom(sels.up1, 'disabled'), null);
-  assert.equal(await I.grabAttributeFrom(sels.down1, 'disabled'), true);
+  assert.equal(await isDis(sels.up1), false);
+  assert.equal(await isDis(sels.down1), true);
   
   I.click(sels.down0);
   I.see("Two", sels.row0);
