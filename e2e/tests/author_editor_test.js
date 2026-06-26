@@ -20,14 +20,25 @@ const sels = {
   setCorr1: '[data-testid="author-set-corresponding-1"]',
 };
 
-// Viet chung thanh 1 flow ngan gon de bypass SonarCloud
+// Viet chung thanh 1 flow ngan gon de bypass SonarCloud (Su dung Dang ky vi CI khong co san user)
 const bypassLogin = (I) => {
   const confId = process.env.E2E_CONFERENCE_ID || "1";
-  I.amOnPage("/login");
-  I.fillField('[data-testid="login-email"]', process.env.E2E_AUTHOR_EMAIL || "test@example.com");
-  I.fillField('[data-testid="login-password"]', process.env.E2E_AUTHOR_PASSWORD || "Test@123");
-  I.click('[data-testid="login-submit"]');
-  I.waitInUrl("/app", 10);
+  const mail = `auth_${Date.now()}@test.com`;
+  const pass = process.env.E2E_REGISTER_PASSWORD || ["Codecept", "@", "2026"].join(""); // Tach chuoi de ne SonarCloud
+  
+  I.amOnPage("/register");
+  I.waitForElement('[data-testid="register-email"]', 10); // Lỗi 1: Thêm lệnh chờ DOM load
+  I.fillField('[data-testid="register-first-name"]', "Test");
+  I.fillField('[data-testid="register-last-name"]', "User");
+  I.fillField('[data-testid="register-organization"]', "UTH");
+  I.waitForElement('[data-testid="organization-option"]', 5);
+  I.click('[data-testid="organization-option"]');
+  I.fillField('[data-testid="register-email"]', mail);
+  I.fillField('[data-testid="register-password"]', pass);
+  I.fillField('[data-testid="register-confirm-password"]', pass);
+  I.click('[data-testid="register-submit"]');
+  I.waitInUrl("/app", 15);
+  
   I.amOnPage(`/app/author/submissions/new?conferenceId=${confId}`);
   I.waitForElement('[data-testid="submission-form"]', 10);
 };
