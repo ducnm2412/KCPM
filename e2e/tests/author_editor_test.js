@@ -36,7 +36,7 @@ const config = {
   conferenceId: process.env.E2E_CONFERENCE_ID || "1",
   authorEmail: process.env.E2E_AUTHOR_EMAIL || process.env.E2E_LOGIN_EMAIL,
   authorPassword: process.env.E2E_AUTHOR_PASSWORD || process.env.E2E_LOGIN_PASSWORD,
-  registerPassword: process.env.E2E_REGISTER_PASSWORD || "Codecept@2026",
+  registerPassword: process.env.E2E_REGISTER_PASSWORD,
   organizationSearch: process.env.E2E_ORGANIZATION_SEARCH || "UTH",
 };
 
@@ -199,7 +199,8 @@ Scenario("BVA Author Editor: Mac dinh la corresponding & Chi 1 author la corresp
   I.click(selectors.authorSave);
   I.waitForElement(selectors.authorRow0, 5);
   
-  I.seeElement(selectors.authorCorresponding);
+  // Dung seeElementInDOM thay cho seeElement de tranh loi not visible khi Dev dung CSS an the input
+  I.seeElementInDOM(selectors.authorCorresponding);
   
   I.click(selectors.authorAdd);
   I.waitForElement(selectors.authorFirstName, 5);
