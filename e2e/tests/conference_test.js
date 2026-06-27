@@ -139,7 +139,7 @@ Scenario("BVA Conference Review Mode SINGLE_BLIND", async ({ I }) => {
   );
 
   assert.equal(
-    await getInputValue(selectors.conferenceReviewMode),
+    await getInputValue(I, selectors.conferenceReviewMode),
     "SINGLE_BLIND"
   );
 });
