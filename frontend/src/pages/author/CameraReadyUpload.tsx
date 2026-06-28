@@ -65,7 +65,9 @@ const CameraReadyUpload: React.FC = () => {
           trackName: 'Test Track',
           deadline: new Date().toISOString(),
           copyrightConfirmed: urlParams.get('isConfirmed') === 'true',
-          canUpload: urlParams.get('canUpload') === 'true'
+          canUpload: urlParams.get('canUpload') === 'true',
+          canConfirmCopyright: true,
+          copyrightConfirmedAt: new Date().toISOString()
         } as any);
         setVersions([]);
         setCopyrightAccepted(urlParams.get('isConfirmed') === 'true');
