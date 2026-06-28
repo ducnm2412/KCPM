@@ -42,7 +42,8 @@ const bypassLogin = (I, queryParams = "") => {
   I.waitInUrl("/app", 15);
   
   // Điều hướng tới trang nộp Camera-ready (Kèm params test)
-  I.amOnPage(`/app/author/submissions/1/camera-ready${queryParams}`);
+  const params = queryParams.startsWith('?') ? '&' + queryParams.slice(1) : queryParams;
+  I.amOnPage(`/app/author/submissions/1/camera-ready?mockE2E=true${params}`);
   I.waitForElement('body', 10);
 };
 
