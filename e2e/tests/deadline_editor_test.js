@@ -9,20 +9,17 @@ const selectors = {
   conferenceCreateForm: '[data-testid="conference-create-form"]',
   conferenceName: '[data-testid="conference-name"]',
   conferenceCreateSubmit: '[data-testid="conference-create-submit"]',
-  deadlineTab: '[data-testid="deadline-tab"]',
   deadlineEditor: '[data-testid="deadline-editor"]',
   deadlineEmpty: '[data-testid="deadline-empty"]',
   deadlineAdd: '[data-testid="deadline-add"]',
   deadlineType: '[data-testid="deadline-type"]',
   deadlineDueDate: '[data-testid="deadline-due-date"]',
   deadlineDescription: '[data-testid="deadline-description"]',
-  deadlineHard: '[data-testid="deadline-hard"]',
   deadlineSave: '[data-testid="deadline-save"]',
-  deadlineCancel: '[data-testid="deadline-cancel"]',
+  deadlineRow: '[data-testid^="deadline-row-"]',
 };
 
 const config = {
-  conferenceId: process.env.E2E_CONFERENCE_ID || undefined,
   adminEmail: process.env.E2E_LOGIN_EMAIL || "admin@uth.edu.vn",
   adminPassword: process.env.E2E_LOGIN_PASSWORD || "admin123",
 };
@@ -51,94 +48,99 @@ const getLastAlert = async (I) => {
   return I.executeScript(() => window.__lastAlert || "");
 };
 
-const loginAsChair = (I) => {
-  I.amOnPage("/login");
-  I.waitForElement(selectors.loginEmail, 10);
-  I.fillField(selectors.loginEmail, config.adminEmail);
-  I.fillField(selectors.loginPassword, config.adminPassword);
-  I.click(selectors.loginSubmit);
-  I.waitInUrl("/app", 20);
+const loginAsChair = async (I) => {
+  await I.amOnPage("/login");
+  await I.waitForElement(selectors.loginEmail, 10);
+  await I.fillField(selectors.loginEmail, config.adminEmail);
+  await I.fillField(selectors.loginPassword, config.adminPassword);
+  await I.click(selectors.loginSubmit);
+  await I.waitInUrl("/app", 20);
 };
 
-const createConferenceIfNeeded = async (I) => {
-  if (config.conferenceId) {
-    return config.conferenceId
-  }
+const createConference = async (I) => {
+  await I.amOnPage("/app/chair/conferences/new");
+  await I.waitForElement(selectors.conferenceCreateForm, 20);
+  await I.fillField(selectors.conferenceName, `E2E Conference ${Date.now()}`);
+  await I.click(selectors.conferenceCreateSubmit);
+  await I.waitInUrl("/app/chair/conference/", 20);
 
-  // Create one conference via UI so the deadline editor test can run against a valid conference.
-  I.amOnPage('/app/chair/conferences/new')
-  I.waitForElement(selectors.conferenceCreateForm, 20)
-  I.fillField(selectors.conferenceName, `E2E Conference ${Date.now()}`)
-  I.click(selectors.conferenceCreateSubmit)
-
-  // Wait for navigation to the created conference config page
-  I.waitInUrl('/app/chair/conference/', 20)
-  const currentUrl = await I.grabCurrentUrl()
-  const match = currentUrl.match(/\/app\/chair\/conference\/(\d+)\/config/)
+  const currentUrl = await I.grabCurrentUrl();
+  const match = currentUrl.match(/\/app\/chair\/conference\/(\d+)\/config/);
   if (!match) {
-    throw new Error(`Unable to determine created conference id from url: ${currentUrl}`)
+    throw new Error(`Unable to determine created conference id from url: ${currentUrl}`);
   }
-  return match[1]
-}
+  return match[1];
+};
 
-const openConferenceConfig = async (I) => {
-  await clearBrowserState(I)
-  loginAsChair(I)
-  const conferenceId = await createConferenceIfNeeded(I)
-  I.amOnPage(`/app/chair/conference/${conferenceId}/config?tab=deadlines`)
-  I.waitForElement(selectors.deadlineEditor, 20)
+const openDeadlineEditor = async (I) => {
+  await clearBrowserState(I);
+  await loginAsChair(I);
+  const conferenceId = await createConference(I);
+  await I.amOnPage(`/app/chair/conference/${conferenceId}/config?tab=deadlines`);
+  await I.waitForElement(selectors.deadlineEditor, 20);
+};
+
+const addDeadline = async (I, { type, dueDate, description }) => {
+  await I.click(selectors.deadlineAdd);
+  await I.waitForElement(selectors.deadlineDueDate, 10);
+  await I.selectOption(selectors.deadlineType, type);
+  await I.fillField(selectors.deadlineDueDate, dueDate);
+  if (description) {
+    await I.fillField(selectors.deadlineDescription, description);
+  }
+  await I.click(selectors.deadlineSave);
+  await I.waitForElement(selectors.deadlineRow, 10);
 };
 
 Scenario("BVA Deadline Editor shows empty state when no deadlines exist", async ({ I }) => {
-  await openConferenceConfig(I);
-  I.waitForElement(selectors.deadlineEmpty, 10);
+  await openDeadlineEditor(I);
+  await I.waitForElement(selectors.deadlineEmpty, 10);
 });
 
 Scenario("BVA Deadline Editor rejects saving without a due date", async ({ I }) => {
-  await openConferenceConfig(I);
+  await openDeadlineEditor(I);
   await installAlertSpy(I);
 
-  I.click(selectors.deadlineAdd);
-  I.waitForElement(selectors.deadlineSave, 10);
-  I.click(selectors.deadlineSave);
+  await I.click(selectors.deadlineAdd);
+  await I.waitForElement(selectors.deadlineSave, 10);
+  await I.click(selectors.deadlineSave);
 
-  assert.notEqual(await getLastAlert(I), "");
+  const alertMessage = await getLastAlert(I);
+  assert.match(
+    alertMessage,
+    /deadline|hạn chót|date and time|ngày giờ/i,
+    `Expected deadline required alert, got: "${alertMessage}"`,
+  );
 });
 
 Scenario("BVA Deadline Editor can add a submission deadline with a future date", async ({ I }) => {
-  await openConferenceConfig(I);
+  await openDeadlineEditor(I);
 
-  I.click(selectors.deadlineAdd);
-  I.waitForElement(selectors.deadlineDueDate, 10);
+  await addDeadline(I, {
+    type: "SUBMISSION",
+    dueDate: "2099-12-31T23:59",
+    description: "Submission deadline for BVA",
+  });
 
-  I.selectOption(selectors.deadlineType, "SUBMISSION");
-  I.fillField(selectors.deadlineDueDate, "2099-12-31T23:59");
-  I.fillField(selectors.deadlineDescription, "Submission deadline for BVA");
-  I.click(selectors.deadlineHard);
-  I.click(selectors.deadlineSave);
-
-  I.waitForElement('[data-testid^="deadline-row-"]', 10);
-  const rowCount = await I.grabNumberOfVisibleElements('[data-testid^="deadline-row-"]');
-  assert.ok(rowCount > 0, "Expected at least one deadline row after saving");
+  const rowCount = await I.grabNumberOfVisibleElements(selectors.deadlineRow);
+  assert.equal(rowCount, 1, "Expected exactly one deadline row after saving");
 });
 
 Scenario("BVA Deadline Editor supports REVIEW and CAMERA_READY types", async ({ I }) => {
-  await openConferenceConfig(I);
+  await openDeadlineEditor(I);
 
-  I.click(selectors.deadlineAdd);
-  I.waitForElement(selectors.deadlineType, 10);
-  I.selectOption(selectors.deadlineType, "REVIEW");
-  I.fillField(selectors.deadlineDueDate, "2100-01-15T12:00");
-  I.fillField(selectors.deadlineDescription, "Review deadline");
-  I.click(selectors.deadlineSave);
+  await addDeadline(I, {
+    type: "REVIEW",
+    dueDate: "2100-01-15T12:00",
+    description: "Review deadline",
+  });
 
-  I.click(selectors.deadlineAdd);
-  I.waitForElement(selectors.deadlineType, 10);
-  I.selectOption(selectors.deadlineType, "CAMERA_READY");
-  I.fillField(selectors.deadlineDueDate, "2100-02-15T12:00");
-  I.fillField(selectors.deadlineDescription, "Camera-ready deadline");
-  I.click(selectors.deadlineSave);
+  await addDeadline(I, {
+    type: "CAMERA_READY",
+    dueDate: "2100-02-15T12:00",
+    description: "Camera-ready deadline",
+  });
 
-  const rowCount = await I.grabNumberOfVisibleElements('[data-testid^="deadline-row-"]');
-  assert.ok(rowCount >= 2, "Expected two deadline rows for REVIEW and CAMERA_READY");
+  const rowCount = await I.grabNumberOfVisibleElements(selectors.deadlineRow);
+  assert.equal(rowCount, 2, "Expected two deadline rows for REVIEW and CAMERA_READY");
 });
