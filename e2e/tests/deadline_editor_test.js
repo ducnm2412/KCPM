@@ -6,6 +6,7 @@ const selectors = {
   loginEmail: '[data-testid="login-email"]',
   loginPassword: '[data-testid="login-password"]',
   loginSubmit: '[data-testid="login-submit"]',
+  deadlineTab: '[data-testid="deadline-tab"]',
   deadlineEditor: '[data-testid="deadline-editor"]',
   deadlineEmpty: '[data-testid="deadline-empty"]',
   deadlineAdd: '[data-testid="deadline-add"]',
@@ -60,6 +61,7 @@ const openConferenceConfig = async (I) => {
   await clearBrowserState(I);
   loginAsChair(I);
   I.amOnPage(`/app/chair/conference/${config.conferenceId}/config`);
+  I.click(selectors.deadlineTab);
   I.waitForElement(selectors.deadlineEditor, 20);
 };
 

@@ -344,6 +344,7 @@ const ConferenceConfig: React.FC = () => {
                 active={activeTab === 'deadlines'}
                 onClick={() => setActiveTab('deadlines')}
                 style={{ cursor: 'pointer' }}
+                data-testid="deadline-tab"
               >
                 {t('conference.deadlines') || 'Deadlines'}
               </CNavLink>
