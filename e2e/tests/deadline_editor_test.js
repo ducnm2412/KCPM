@@ -6,6 +6,9 @@ const selectors = {
   loginEmail: '[data-testid="login-email"]',
   loginPassword: '[data-testid="login-password"]',
   loginSubmit: '[data-testid="login-submit"]',
+  conferenceCreateForm: '[data-testid="conference-create-form"]',
+  conferenceName: '[data-testid="conference-name"]',
+  conferenceCreateSubmit: '[data-testid="conference-create-submit"]',
   deadlineTab: '[data-testid="deadline-tab"]',
   deadlineEditor: '[data-testid="deadline-editor"]',
   deadlineEmpty: '[data-testid="deadline-empty"]',
@@ -19,7 +22,7 @@ const selectors = {
 };
 
 const config = {
-  conferenceId: process.env.E2E_CONFERENCE_ID || "1",
+  conferenceId: process.env.E2E_CONFERENCE_ID || undefined,
   adminEmail: process.env.E2E_LOGIN_EMAIL || "admin@uth.edu.vn",
   adminPassword: process.env.E2E_LOGIN_PASSWORD || "admin123",
 };
@@ -57,11 +60,33 @@ const loginAsChair = (I) => {
   I.waitInUrl("/app", 20);
 };
 
+const createConferenceIfNeeded = async (I) => {
+  if (config.conferenceId) {
+    return config.conferenceId
+  }
+
+  // Create one conference via UI so the deadline editor test can run against a valid conference.
+  I.amOnPage('/app/chair/conferences/new')
+  I.waitForElement(selectors.conferenceCreateForm, 20)
+  I.fillField(selectors.conferenceName, `E2E Conference ${Date.now()}`)
+  I.click(selectors.conferenceCreateSubmit)
+
+  // Wait for navigation to the created conference config page
+  I.waitInUrl('/app/chair/conference/', 20)
+  const currentUrl = await I.grabCurrentUrl()
+  const match = currentUrl.match(/\/app\/chair\/conference\/(\d+)\/config/)
+  if (!match) {
+    throw new Error(`Unable to determine created conference id from url: ${currentUrl}`)
+  }
+  return match[1]
+}
+
 const openConferenceConfig = async (I) => {
-  await clearBrowserState(I);
-  loginAsChair(I);
-  I.amOnPage(`/app/chair/conference/${config.conferenceId}/config?tab=deadlines`);
-  I.waitForElement(selectors.deadlineEditor, 20);
+  await clearBrowserState(I)
+  loginAsChair(I)
+  const conferenceId = await createConferenceIfNeeded(I)
+  I.amOnPage(`/app/chair/conference/${conferenceId}/config?tab=deadlines`)
+  I.waitForElement(selectors.deadlineEditor, 20)
 };
 
 Scenario("BVA Deadline Editor shows empty state when no deadlines exist", async ({ I }) => {
