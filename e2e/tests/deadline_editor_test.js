@@ -48,6 +48,27 @@ const getLastAlert = async (I) => {
   return I.executeScript(() => window.__lastAlert || "");
 };
 
+const setControlledInputValue = async (I, selector, value) => {
+  await I.executeScript(
+    ({ fieldSelector, fieldValue }) => {
+      const element = document.querySelector(fieldSelector);
+      if (!element) {
+        throw new Error(`Field not found: ${fieldSelector}`);
+      }
+
+      const prototype =
+        element instanceof HTMLTextAreaElement
+          ? window.HTMLTextAreaElement.prototype
+          : window.HTMLInputElement.prototype;
+      const nativeValueSetter = Object.getOwnPropertyDescriptor(prototype, "value").set;
+      nativeValueSetter.call(element, fieldValue);
+      element.dispatchEvent(new Event("input", { bubbles: true }));
+      element.dispatchEvent(new Event("change", { bubbles: true }));
+    },
+    { fieldSelector: selector, fieldValue: value },
+  );
+};
+
 const loginAsChair = async (I) => {
   await I.amOnPage("/login");
   await I.waitForElement(selectors.loginEmail, 10);
@@ -81,15 +102,22 @@ const openDeadlineEditor = async (I) => {
 };
 
 const addDeadline = async (I, { type, dueDate, description }) => {
+  await installAlertSpy(I);
   await I.click(selectors.deadlineAdd);
   await I.waitForElement(selectors.deadlineDueDate, 10);
   await I.selectOption(selectors.deadlineType, type);
-  await I.fillField(selectors.deadlineDueDate, dueDate);
+  await setControlledInputValue(I, selectors.deadlineDueDate, dueDate);
   if (description) {
-    await I.fillField(selectors.deadlineDescription, description);
+    await setControlledInputValue(I, selectors.deadlineDescription, description);
   }
   await I.click(selectors.deadlineSave);
-  await I.waitForElement(selectors.deadlineRow, 10);
+
+  const alertMessage = await getLastAlert(I);
+  if (alertMessage) {
+    throw new Error(`Failed to save deadline: ${alertMessage}`);
+  }
+
+  await I.waitForElement(selectors.deadlineRow, 15);
 };
 
 Scenario("BVA Deadline Editor shows empty state when no deadlines exist", async ({ I }) => {
