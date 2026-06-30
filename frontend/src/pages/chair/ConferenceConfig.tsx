@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import {
   CCard,
   CCardBody,
@@ -44,6 +44,7 @@ import DeadlineEditor from '../../components/conference/DeadlineEditor'
 const ConferenceConfig: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { t } = useTranslation()
   const [conference, setConference] = useState<ConferenceResponse | null>(null)
   const [cfp, setCfp] = useState<CFPResponse | null>(null)
@@ -51,7 +52,12 @@ const ConferenceConfig: React.FC = () => {
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [closing, setClosing] = useState(false)
-  const [activeTab, setActiveTab] = useState('basic')
+  const [activeTab, setActiveTab] = useState(() => {
+    const tabs = ['basic', 'cfp', 'tracks', 'deadlines'] as const
+    const params = new URLSearchParams(location.search)
+    const requestedTab = params.get('tab')
+    return requestedTab && tabs.includes(requestedTab as (typeof tabs)[number]) ? requestedTab : 'basic'
+  })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -60,6 +66,15 @@ const ConferenceConfig: React.FC = () => {
       loadData()
     }
   }, [id])
+
+  useEffect(() => {
+    const tabs = ['basic', 'cfp', 'tracks', 'deadlines'] as const
+    const params = new URLSearchParams(location.search)
+    const requestedTab = params.get('tab')
+    if (requestedTab && tabs.includes(requestedTab as (typeof tabs)[number])) {
+      setActiveTab(requestedTab)
+    }
+  }, [location.search])
 
   const loadData = async () => {
     try {
@@ -306,7 +321,12 @@ const ConferenceConfig: React.FC = () => {
             <CNavItem>
               <CNavLink
                 active={activeTab === 'basic'}
-                onClick={() => setActiveTab('basic')}
+                onClick={() => {
+                  setActiveTab('basic')
+                  const params = new URLSearchParams(location.search)
+                  params.set('tab', 'basic')
+                  navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' })
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 {t('conference.basicInfo') || 'Thông tin cơ bản'}
@@ -315,7 +335,12 @@ const ConferenceConfig: React.FC = () => {
             <CNavItem>
               <CNavLink
                 active={activeTab === 'cfp'}
-                onClick={() => setActiveTab('cfp')}
+                onClick={() => {
+                  setActiveTab('cfp')
+                  const params = new URLSearchParams(location.search)
+                  params.set('tab', 'cfp')
+                  navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' })
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 {t('conference.cfp') || 'CFP'}
@@ -333,7 +358,12 @@ const ConferenceConfig: React.FC = () => {
             <CNavItem>
               <CNavLink
                 active={activeTab === 'tracks'}
-                onClick={() => setActiveTab('tracks')}
+                onClick={() => {
+                  setActiveTab('tracks')
+                  const params = new URLSearchParams(location.search)
+                  params.set('tab', 'tracks')
+                  navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' })
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 {t('conference.tracks') || 'Tracks'}
@@ -342,7 +372,12 @@ const ConferenceConfig: React.FC = () => {
             <CNavItem>
               <CNavLink
                 active={activeTab === 'deadlines'}
-                onClick={() => setActiveTab('deadlines')}
+                onClick={() => {
+                  setActiveTab('deadlines')
+                  const params = new URLSearchParams(location.search)
+                  params.set('tab', 'deadlines')
+                  navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' })
+                }}
                 style={{ cursor: 'pointer' }}
                 data-testid="deadline-tab"
               >

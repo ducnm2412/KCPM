@@ -60,8 +60,7 @@ const loginAsChair = (I) => {
 const openConferenceConfig = async (I) => {
   await clearBrowserState(I);
   loginAsChair(I);
-  I.amOnPage(`/app/chair/conference/${config.conferenceId}/config`);
-  I.click(selectors.deadlineTab);
+  I.amOnPage(`/app/chair/conference/${config.conferenceId}/config?tab=deadlines`);
   I.waitForElement(selectors.deadlineEditor, 20);
 };
 
