@@ -51,7 +51,7 @@ const DecisionBoard: React.FC = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const conferenceId = searchParams.get('conferenceId')
-    ? parseInt(searchParams.get('conferenceId')!)
+    ? Number.parseInt(searchParams.get('conferenceId')!)
     : null
   const [decisions, setDecisions] = useState<Decision[]>([])
   const [loading, setLoading] = useState(true)

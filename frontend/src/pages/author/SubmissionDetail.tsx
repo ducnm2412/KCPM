@@ -36,7 +36,7 @@ const SubmissionDetail: React.FC = () => {
   const loadSubmission = async () => {
     try {
       setLoading(true)
-      const data = await submissionService.getSubmission(parseInt(id!))
+      const data = await submissionService.getSubmission(Number.parseInt(id!))
       setSubmission(data)
     } catch (error) {
       console.error('Error loading submission:', error)
@@ -59,9 +59,9 @@ const SubmissionDetail: React.FC = () => {
 
     try {
       if (isDraft) {
-        await submissionService.deleteSubmission(parseInt(id!))
+        await submissionService.deleteSubmission(Number.parseInt(id!))
       } else {
-        await submissionService.withdrawSubmission(parseInt(id!))
+        await submissionService.withdrawSubmission(Number.parseInt(id!))
       }
       navigate('/app/author/submissions')
     } catch (error) {
@@ -87,7 +87,7 @@ const SubmissionDetail: React.FC = () => {
 
     try {
       setSubmitting(true)
-      const updated = await submissionService.submitSubmission(parseInt(id!))
+      const updated = await submissionService.submitSubmission(Number.parseInt(id!))
       setSubmission(updated)
       alert('Bài nộp đã được gửi thành công!')
     } catch (error: any) {
@@ -99,7 +99,7 @@ const SubmissionDetail: React.FC = () => {
 
   const handleDownloadFile = async () => {
     try {
-      const blob = await submissionService.downloadFile(parseInt(id!))
+      const blob = await submissionService.downloadFile(Number.parseInt(id!))
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

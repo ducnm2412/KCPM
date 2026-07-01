@@ -80,7 +80,7 @@ const ConferenceConfig: React.FC = () => {
     try {
       setLoading(true)
       setError('')
-      const conferenceId = parseInt(id!)
+      const conferenceId = Number.parseInt(id!)
       const [confData, cfpData] = await Promise.all([
         conferenceService.getConference(conferenceId),
         conferenceService.getCFP(conferenceId).catch(() => null), // CFP might not exist yet
@@ -112,7 +112,7 @@ const ConferenceConfig: React.FC = () => {
         tracks: conference.tracks,
         deadlines: conference.deadlines,
       }
-      const updated = await conferenceService.updateConference(parseInt(id!), updateData)
+      const updated = await conferenceService.updateConference(Number.parseInt(id!), updateData)
       setConference(updated)
       setSuccess(t('conference.updateSuccess'))
     } catch (err: any) {
@@ -543,7 +543,7 @@ const ConferenceConfig: React.FC = () => {
                       const updateData: ConferenceUpdateRequest = {
                         tracks: conference.tracks,
                       }
-                      await conferenceService.updateConference(parseInt(id!), updateData)
+                      await conferenceService.updateConference(Number.parseInt(id!), updateData)
                       setSuccess(t('conference.tracksUpdated'))
                     } catch (err: any) {
                       setError(err.response?.data?.message || t('common.error') || 'Lỗi khi cập nhật tracks')
@@ -581,7 +581,7 @@ const ConferenceConfig: React.FC = () => {
                       const updateData: ConferenceUpdateRequest = {
                         deadlines: conference.deadlines,
                       }
-                      await conferenceService.updateConference(parseInt(id!), updateData)
+                      await conferenceService.updateConference(Number.parseInt(id!), updateData)
                       setSuccess(t('conference.deadlinesUpdated'))
                     } catch (err: any) {
                       setError(

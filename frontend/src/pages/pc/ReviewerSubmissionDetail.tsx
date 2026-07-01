@@ -40,7 +40,7 @@ const ReviewerSubmissionDetail: React.FC = () => {
 
     useEffect(() => {
         if (id) {
-            loadSubmission(parseInt(id))
+            loadSubmission(Number.parseInt(id))
         }
     }, [id])
 

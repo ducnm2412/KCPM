@@ -32,7 +32,7 @@ const SubmissionReviewsView: React.FC = () => {
   const { user } = useAuth()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const submissionId = id ? parseInt(id) : null
+  const submissionId = id ? Number.parseInt(id) : null
   const [reviews, setReviews] = useState<Review[]>([])
   const [averageScore, setAverageScore] = useState<AverageScore | null>(null)
   const [loading, setLoading] = useState(true)

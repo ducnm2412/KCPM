@@ -53,7 +53,7 @@ const CameraReadyDetail: React.FC = () => {
 
             if (!conferenceId) {
                 // Lấy conferenceId từ submission gốc nếu không có trong URL
-                const legacySub = await submissionService.getSubmission(parseInt(paperId!))
+                const legacySub = await submissionService.getSubmission(Number.parseInt(paperId!))
                 conferenceId = legacySub.conferenceId.toString()
             }
 

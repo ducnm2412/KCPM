@@ -31,7 +31,7 @@ const SubmissionEdit: React.FC = () => {
   const loadSubmission = async () => {
     try {
       setLoading(true)
-      const data = await submissionService.getSubmission(parseInt(id!))
+      const data = await submissionService.getSubmission(Number.parseInt(id!))
       setSubmission(data)
 
       // Kiểm tra nếu không thể edit
@@ -57,7 +57,7 @@ const SubmissionEdit: React.FC = () => {
     try {
       setSaving(true)
       // Step 1: Update submission metadata (JSON only, no file)
-      await submissionService.updateSubmission(parseInt(id!), {
+      await submissionService.updateSubmission(Number.parseInt(id!), {
         title: data.title,
         abstractText: data.abstract,
         keywords: data.keywords.join(', '), // Convert array to string
@@ -67,11 +67,11 @@ const SubmissionEdit: React.FC = () => {
 
       // Step 2: Upload PDF file if provided
       if (data.file) {
-        await submissionService.uploadPdf(parseInt(id!), data.file)
+        await submissionService.uploadPdf(Number.parseInt(id!), data.file)
       }
 
       // Reload submission after update
-      const updated = await submissionService.getSubmission(parseInt(id!))
+      const updated = await submissionService.getSubmission(Number.parseInt(id!))
       setSubmission(updated)
       navigate(`/app/author/submissions/${id}`)
     } catch (error: any) {
@@ -99,7 +99,7 @@ const SubmissionEdit: React.FC = () => {
 
     try {
       setSubmitting(true)
-      const updated = await submissionService.submitSubmission(parseInt(id!))
+      const updated = await submissionService.submitSubmission(Number.parseInt(id!))
       setSubmission(updated)
       alert('Bài nộp đã được gửi thành công!')
       navigate(`/app/author/submissions/${id}`)

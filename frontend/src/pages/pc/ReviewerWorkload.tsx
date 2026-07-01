@@ -32,7 +32,7 @@ const ReviewerWorkload: React.FC = () => {
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const conferenceId = searchParams.get('conferenceId')
-    ? parseInt(searchParams.get('conferenceId')!)
+    ? Number.parseInt(searchParams.get('conferenceId')!)
     : null
   const [workload, setWorkload] = useState<Workload | null>(null)
   const [loading, setLoading] = useState(true)

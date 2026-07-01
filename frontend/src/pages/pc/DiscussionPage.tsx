@@ -39,17 +39,17 @@ const DiscussionPage: React.FC = () => {
       if (id) {
         // Load by reviewId or assignmentId
         try {
-          reviewData = await reviewService.getReview(parseInt(id))
+          reviewData = await reviewService.getReview(Number.parseInt(id))
           currentSubmissionId = reviewData.submissionId
         } catch (error) {
           // If reviewId fails, try to load by assignmentId
           try {
-            reviewData = await reviewService.getReviewByAssignment(parseInt(id))
+            reviewData = await reviewService.getReviewByAssignment(Number.parseInt(id))
             if (reviewData) {
               currentSubmissionId = reviewData.submissionId
             } else {
               // If no review found by assignment, try to get assignment to at least get submissionId
-              const assignment = await reviewService.getAssignment(parseInt(id))
+              const assignment = await reviewService.getAssignment(Number.parseInt(id))
               currentSubmissionId = assignment.submissionId
             }
           } catch (e) {
@@ -58,7 +58,7 @@ const DiscussionPage: React.FC = () => {
         }
       } else if (submissionId) {
         // Load by submissionId directly
-        currentSubmissionId = parseInt(submissionId)
+        currentSubmissionId = Number.parseInt(submissionId)
 
         // 1. Logic cho PC/Reviewer: Tìm bài review của mình
         if (!isChairOrAdmin) {

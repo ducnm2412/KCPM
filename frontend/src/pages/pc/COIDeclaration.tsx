@@ -31,7 +31,7 @@ const COIDeclaration: React.FC = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const submissionId = searchParams.get('submissionId')
-    ? parseInt(searchParams.get('submissionId')!)
+    ? Number.parseInt(searchParams.get('submissionId')!)
     : null
   const [coiType, setCoiType] = useState<COIType | ''>('')
   const [reason, setReason] = useState('')
