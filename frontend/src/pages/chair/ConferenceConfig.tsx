@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
+
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useCallback } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import {
   CCard,
   CCardBody,
@@ -34,18 +37,20 @@ import DeadlineEditor from '../../components/conference/DeadlineEditor'
 
 /**
  * ConferenceConfig - Trang cấu hình conference
- *
+
  * Features:
  * - Cập nhật thông tin conference
  * - Cấu hình CFP (call for papers, submission guidelines)
  * - Publish/Close CFP
  * - Chỉ CHAIR mới có quyền
- */
+
 const ConferenceConfig: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
   const { t } = useTranslation()
+// 1. TẠO CUSTOM HOOK ĐỂ CHỨA TOÀN BỘ LOGIC
+const useConferenceConfig = (id: string | undefined, t: any) => {
   const [conference, setConference] = useState<ConferenceResponse | null>(null)
   const [cfp, setCfp] = useState<CFPResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -77,13 +82,14 @@ const ConferenceConfig: React.FC = () => {
   }, [location.search])
 
   const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
       const conferenceId = Number.parseInt(id!)
       const [confData, cfpData] = await Promise.all([
         conferenceService.getConference(conferenceId),
-        conferenceService.getCFP(conferenceId).catch(() => null), // CFP might not exist yet
+        conferenceService.getCFP(conferenceId).catch(() => null),
       ])
       setConference(confData)
       setCfp(cfpData)
@@ -93,24 +99,22 @@ const ConferenceConfig: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
-
+  }, [id, t])
+  useEffect(() => {
+    if (id) {
+      loadData()
+    }
+  }, [id, loadData])
   const handleUpdateConference = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    setSuccess('')
-
+    setError(''); setSuccess('')
     if (!conference) return
-
     try {
       setSaving(true)
       const updateData: ConferenceUpdateRequest = {
-        name: conference.name,
-        acronym: conference.acronym,
-        description: conference.description,
-        reviewMode: conference.reviewMode,
-        tracks: conference.tracks,
-        deadlines: conference.deadlines,
+        name: conference.name, acronym: conference.acronym,
+        description: conference.description, reviewMode: conference.reviewMode,
+        tracks: conference.tracks, deadlines: conference.deadlines,
       }
       const updated = await conferenceService.updateConference(Number.parseInt(id!), updateData)
       setConference(updated)
@@ -121,14 +125,10 @@ const ConferenceConfig: React.FC = () => {
       setSaving(false)
     }
   }
-
   const handleUpdateCFP = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    setSuccess('')
-
+    setError(''); setSuccess('')
     if (!conference) return
-
     try {
       setSaving(true)
       const cfpData: CFPRequest = {
@@ -146,47 +146,54 @@ const ConferenceConfig: React.FC = () => {
       setSaving(false)
     }
   }
-
   const handlePublishCFP = async () => {
-    if (!conference) return
-    if (!window.confirm(t('conference.confirmPublishCFP'))) {
-      return
-    }
-
+    if (!conference || !window.confirm(t('conference.confirmPublishCFP'))) return
     try {
-      setPublishing(true)
-      setError('')
+      setPublishing(true); setError('')
       const updated = await conferenceService.publishCFP(conference.id)
       setCfp(updated)
       setSuccess(t('conference.cfpPublished'))
-      await loadData() // Reload to get updated conference status
+      await loadData()
     } catch (err: any) {
       setError(err.response?.data?.message || t('conference.cfpPublishFailed'))
     } finally {
       setPublishing(false)
     }
   }
-
   const handleCloseCFP = async () => {
-    if (!conference) return
-    if (!window.confirm(t('conference.confirmCloseCFP'))) {
-      return
-    }
-
+    if (!conference || !window.confirm(t('conference.confirmCloseCFP'))) return
     try {
-      setClosing(true)
-      setError('')
+      setClosing(true); setError('')
       const updated = await conferenceService.closeCFP(conference.id)
       setCfp(updated)
       setSuccess(t('conference.cfpCloseSuccess'))
-      await loadData() // Reload to get updated conference status
+      await loadData()
     } catch (err: any) {
       setError(err.response?.data?.message || t('conference.cfpCloseFailed'))
     } finally {
       setClosing(false)
     }
   }
-
+  return {
+    conference, setConference, cfp, setCfp,
+    loading, saving, setSaving, publishing, closing,
+    activeTab, setActiveTab, error, setError, success, setSuccess,
+    loadData, handleUpdateConference, handleUpdateCFP, handlePublishCFP, handleCloseCFP
+  }
+}
+// 2. COMPONENT CHÍNH LÚC NÀY CHỈ GỌI HOOK VÀ RENDER GIAO DIỆN
+const ConferenceConfig: React.FC = () => {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+  
+  // Dùng Hook đã tách logic ở trên
+  const {
+    conference, setConference, cfp, setCfp,
+    loading, saving, setSaving, publishing, closing,
+    activeTab, setActiveTab, error, setError, success, setSuccess,
+    loadData, handleUpdateConference, handleUpdateCFP, handlePublishCFP, handleCloseCFP
+  } = useConferenceConfig(id, t)
   if (loading) {
     return (
       <div className="d-flex justify-content-center p-5">
@@ -194,7 +201,6 @@ const ConferenceConfig: React.FC = () => {
       </div>
     )
   }
-
   if (error && !conference) {
     return (
       <CCard>
@@ -207,7 +213,6 @@ const ConferenceConfig: React.FC = () => {
       </CCard>
     )
   }
-
   if (!conference) {
     return (
       <CCard>
