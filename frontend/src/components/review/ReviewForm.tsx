@@ -108,7 +108,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   }, [reviewId, assignmentId])
 
   useEffect(() => {
-    void loadReview()
+    loadReview()
   }, [loadReview])
 
   const handleSubmit = async (e: React.FormEvent) => {

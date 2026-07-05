@@ -101,11 +101,11 @@ apiClient.interceptors.response.use(
         if (window.location.pathname !== '/login') {
           window.location.href = '/login'
         }
-        return Promise.reject(refreshError)
+        throw refreshError;
       }
     }
 
-    return Promise.reject(error)
+    throw error;
   },
 )
 

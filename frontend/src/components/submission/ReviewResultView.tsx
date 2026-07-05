@@ -41,7 +41,7 @@ const ReviewResultView: React.FC<ReviewResultViewProps> = ({ submissionId }) => 
   }, [submissionId])
 
   useEffect(() => {
-    void loadData()
+    loadData()
   }, [loadData])
 
   const getRecommendationBadge = (recommendation: Review['recommendation']) => {
