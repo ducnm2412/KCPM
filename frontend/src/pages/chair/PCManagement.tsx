@@ -43,7 +43,7 @@ import { userService, UserDTO } from '../../services/user.service'
 const PCManagement: React.FC = () => {
   const [searchParams] = useSearchParams()
   const conferenceId = searchParams.get('conferenceId')
-    ? parseInt(searchParams.get('conferenceId')!)
+    ? Number.parseInt(searchParams.get('conferenceId')!)
     : null
   const [members, setMembers] = useState<PCMember[]>([])
   const [invitations, setInvitations] = useState<PCInvitation[]>([])

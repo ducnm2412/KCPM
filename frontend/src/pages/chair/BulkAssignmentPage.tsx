@@ -38,7 +38,7 @@ import { submissionService, Submission } from '../../services/submission.service
 const BulkAssignmentPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const conferenceId = id ? parseInt(id) : null
+  const conferenceId = id ? Number.parseInt(id) : null
   const [pcMembers, setPCMembers] = useState<PCMember[]>([])
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loadingMembers, setLoadingMembers] = useState(false)
@@ -93,7 +93,7 @@ const BulkAssignmentPage: React.FC = () => {
       .split(/[,\n]/)
       .map((id) => id.trim())
       .filter((id) => id.length > 0)
-      .map((id) => parseInt(id))
+      .map((id) => Number.parseInt(id))
       .filter((id) => !isNaN(id))
   }
 
@@ -358,7 +358,7 @@ const BulkAssignmentPage: React.FC = () => {
                               handleUpdateAssignment(
                                 index,
                                 'reviewerId',
-                                parseInt(e.target.value)
+                                Number.parseInt(e.target.value)
                               )
                             }
                             size="sm"

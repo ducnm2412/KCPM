@@ -301,7 +301,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
             data-testid="submission-track"
             className="form-select"
             value={trackId || ''}
-            onChange={(e) => setTrackId(e.target.value ? parseInt(e.target.value) : undefined)}
+            onChange={(e) => setTrackId(e.target.value ? Number.parseInt(e.target.value) : undefined)}
           >
             <option value="">Chọn lĩnh vực</option>
             {cfp.tracks.map((track) => (

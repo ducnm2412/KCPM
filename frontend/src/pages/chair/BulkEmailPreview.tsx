@@ -36,7 +36,7 @@ import { decisionService, Decision } from '../../services/decision.service'
 const BulkEmailPreview: React.FC = () => {
   const [searchParams] = useSearchParams()
   const conferenceId = searchParams.get('conferenceId')
-    ? parseInt(searchParams.get('conferenceId')!)
+    ? Number.parseInt(searchParams.get('conferenceId')!)
     : null
   const [decisions, setDecisions] = useState<Decision[]>([])
   const [selectedRecipientIds, setSelectedRecipientIds] = useState<number[]>([])

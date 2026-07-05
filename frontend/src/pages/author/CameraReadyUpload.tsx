@@ -76,7 +76,7 @@ const CameraReadyUpload: React.FC = () => {
       // ----------------------------
 
       // 1. Lấy thông tin submission gốc để có conferenceId
-      const legacySub = await submissionService.getSubmission(parseInt(paperId!))
+      const legacySub = await submissionService.getSubmission(Number.parseInt(paperId!))
       const conferenceId = legacySub.conferenceId.toString()
 
       // 2. Lấy thông tin camera-ready submission

@@ -19,9 +19,9 @@ const ReviewFormPage: React.FC = () => {
   const [searchParams] = useSearchParams()
   const { id } = useParams<{ id?: string }>()
   const assignmentId = searchParams.get('assignmentId')
-    ? parseInt(searchParams.get('assignmentId')!)
+    ? Number.parseInt(searchParams.get('assignmentId')!)
     : undefined
-  const reviewId = id ? parseInt(id) : undefined
+  const reviewId = id ? Number.parseInt(id) : undefined
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 

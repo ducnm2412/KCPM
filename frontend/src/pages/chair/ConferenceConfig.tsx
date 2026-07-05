@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
@@ -41,7 +43,12 @@ import DeadlineEditor from '../../components/conference/DeadlineEditor'
  * - Cấu hình CFP (call for papers, submission guidelines)
  * - Publish/Close CFP
  * - Chỉ CHAIR mới có quyền
- */
+
+const ConferenceConfig: React.FC = () => {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { t } = useTranslation()
 // 1. TẠO CUSTOM HOOK ĐỂ CHỨA TOÀN BỘ LOGIC
 const useConferenceConfig = (id: string | undefined, t: any) => {
   const [conference, setConference] = useState<ConferenceResponse | null>(null)
@@ -50,14 +57,36 @@ const useConferenceConfig = (id: string | undefined, t: any) => {
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [closing, setClosing] = useState(false)
-  const [activeTab, setActiveTab] = useState('basic')
+  const [activeTab, setActiveTab] = useState(() => {
+    const tabs = ['basic', 'cfp', 'tracks', 'deadlines'] as const
+    const params = new URLSearchParams(location.search)
+    const requestedTab = params.get('tab')
+    return requestedTab && tabs.includes(requestedTab as (typeof tabs)[number]) ? requestedTab : 'basic'
+  })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  useEffect(() => {
+    if (id) {
+      loadData()
+    }
+  }, [id])
+
+  useEffect(() => {
+    const tabs = ['basic', 'cfp', 'tracks', 'deadlines'] as const
+    const params = new URLSearchParams(location.search)
+    const requestedTab = params.get('tab')
+    if (requestedTab && tabs.includes(requestedTab as (typeof tabs)[number])) {
+      setActiveTab(requestedTab)
+    }
+  }, [location.search])
+
+  const loadData = async () => {
   const loadData = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
-      const conferenceId = parseInt(id!)
+      const conferenceId = Number.parseInt(id!)
       const [confData, cfpData] = await Promise.all([
         conferenceService.getConference(conferenceId),
         conferenceService.getCFP(conferenceId).catch(() => null),
@@ -87,7 +116,7 @@ const useConferenceConfig = (id: string | undefined, t: any) => {
         description: conference.description, reviewMode: conference.reviewMode,
         tracks: conference.tracks, deadlines: conference.deadlines,
       }
-      const updated = await conferenceService.updateConference(parseInt(id!), updateData)
+      const updated = await conferenceService.updateConference(Number.parseInt(id!), updateData)
       setConference(updated)
       setSuccess(t('conference.updateSuccess'))
     } catch (err: any) {
@@ -297,7 +326,12 @@ const ConferenceConfig: React.FC = () => {
             <CNavItem>
               <CNavLink
                 active={activeTab === 'basic'}
-                onClick={() => setActiveTab('basic')}
+                onClick={() => {
+                  setActiveTab('basic')
+                  const params = new URLSearchParams(location.search)
+                  params.set('tab', 'basic')
+                  navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' })
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 {t('conference.basicInfo') || 'Thông tin cơ bản'}
@@ -306,7 +340,12 @@ const ConferenceConfig: React.FC = () => {
             <CNavItem>
               <CNavLink
                 active={activeTab === 'cfp'}
-                onClick={() => setActiveTab('cfp')}
+                onClick={() => {
+                  setActiveTab('cfp')
+                  const params = new URLSearchParams(location.search)
+                  params.set('tab', 'cfp')
+                  navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' })
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 {t('conference.cfp') || 'CFP'}
@@ -324,7 +363,12 @@ const ConferenceConfig: React.FC = () => {
             <CNavItem>
               <CNavLink
                 active={activeTab === 'tracks'}
-                onClick={() => setActiveTab('tracks')}
+                onClick={() => {
+                  setActiveTab('tracks')
+                  const params = new URLSearchParams(location.search)
+                  params.set('tab', 'tracks')
+                  navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' })
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 {t('conference.tracks') || 'Tracks'}
@@ -333,8 +377,14 @@ const ConferenceConfig: React.FC = () => {
             <CNavItem>
               <CNavLink
                 active={activeTab === 'deadlines'}
-                onClick={() => setActiveTab('deadlines')}
+                onClick={() => {
+                  setActiveTab('deadlines')
+                  const params = new URLSearchParams(location.search)
+                  params.set('tab', 'deadlines')
+                  navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' })
+                }}
                 style={{ cursor: 'pointer' }}
+                data-testid="deadline-tab"
               >
                 {t('conference.deadlines') || 'Deadlines'}
               </CNavLink>
@@ -498,7 +548,7 @@ const ConferenceConfig: React.FC = () => {
                       const updateData: ConferenceUpdateRequest = {
                         tracks: conference.tracks,
                       }
-                      await conferenceService.updateConference(parseInt(id!), updateData)
+                      await conferenceService.updateConference(Number.parseInt(id!), updateData)
                       setSuccess(t('conference.tracksUpdated'))
                     } catch (err: any) {
                       setError(err.response?.data?.message || t('common.error') || 'Lỗi khi cập nhật tracks')
@@ -536,7 +586,7 @@ const ConferenceConfig: React.FC = () => {
                       const updateData: ConferenceUpdateRequest = {
                         deadlines: conference.deadlines,
                       }
-                      await conferenceService.updateConference(parseInt(id!), updateData)
+                      await conferenceService.updateConference(Number.parseInt(id!), updateData)
                       setSuccess(t('conference.deadlinesUpdated'))
                     } catch (err: any) {
                       setError(

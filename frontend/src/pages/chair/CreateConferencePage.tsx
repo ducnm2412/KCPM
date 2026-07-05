@@ -52,7 +52,7 @@ const CreateConferencePage: React.FC = () => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'chairId' ? (value ? parseInt(value) : undefined) : value,
+      [name]: name === 'chairId' ? (value ? Number.parseInt(value) : undefined) : value,
     }))
     setError('')
   }

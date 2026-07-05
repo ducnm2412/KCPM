@@ -25,7 +25,7 @@ import { assignmentService, AssignmentQualityMetrics as AssignmentQualityMetrics
 const AssignmentQualityMetrics: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const conferenceId = id ? parseInt(id) : null
+  const conferenceId = id ? Number.parseInt(id) : null
   const [metrics, setMetrics] = useState<AssignmentQualityMetricsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

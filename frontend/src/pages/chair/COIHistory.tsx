@@ -34,7 +34,7 @@ const COIHistory: React.FC = () => {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const conferenceId = searchParams.get('conferenceId')
-    ? parseInt(searchParams.get('conferenceId')!)
+    ? Number.parseInt(searchParams.get('conferenceId')!)
     : null
   const [history, setHistory] = useState<COIHistoryData[]>([])
   const [filteredHistory, setFilteredHistory] = useState<COIHistoryData[]>([])

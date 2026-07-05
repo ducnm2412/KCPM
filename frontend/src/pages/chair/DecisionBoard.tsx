@@ -47,7 +47,13 @@ import { conferenceService, ConferenceResponse } from '../../services/conference
  * - Accept/Reject submissions
  * - Gửi notifications
  * - Xem review summary
- */
+
+const DecisionBoard: React.FC = () => {
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const conferenceId = searchParams.get('conferenceId')
+    ? Number.parseInt(searchParams.get('conferenceId')!)
+    : null
 // 1. TẠO CUSTOM HOOK
 const useDecisionBoardLogic = (conferenceId: number | null, navigate: any) => {
   const [decisions, setDecisions] = useState<Decision[]>([])
