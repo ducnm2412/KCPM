@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import {
   CCard,
   CCardBody,
@@ -35,22 +33,8 @@ import {
 import TrackEditor from '../../components/conference/TrackEditor'
 import DeadlineEditor from '../../components/conference/DeadlineEditor'
 
-/**
- * ConferenceConfig - Trang cấu hình conference
 
- * Features:
- * - Cập nhật thông tin conference
- * - Cấu hình CFP (call for papers, submission guidelines)
- * - Publish/Close CFP
- * - Chỉ CHAIR mới có quyền
-
-const ConferenceConfig: React.FC = () => {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { t } = useTranslation()
-// 1. TẠO CUSTOM HOOK ĐỂ CHỨA TOÀN BỘ LOGIC
-const useConferenceConfig = (id: string | undefined, t: any) => {
+const useConferenceConfig = (id: string | undefined, t: any, location: { search: string }) => {
   const [conference, setConference] = useState<ConferenceResponse | null>(null)
   const [cfp, setCfp] = useState<CFPResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -67,12 +51,6 @@ const useConferenceConfig = (id: string | undefined, t: any) => {
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
-    if (id) {
-      loadData()
-    }
-  }, [id])
-
-  useEffect(() => {
     const tabs = ['basic', 'cfp', 'tracks', 'deadlines'] as const
     const params = new URLSearchParams(location.search)
     const requestedTab = params.get('tab')
@@ -81,7 +59,6 @@ const useConferenceConfig = (id: string | undefined, t: any) => {
     }
   }, [location.search])
 
-  const loadData = async () => {
   const loadData = useCallback(async () => {
     try {
       setLoading(true)
@@ -100,6 +77,7 @@ const useConferenceConfig = (id: string | undefined, t: any) => {
       setLoading(false)
     }
   }, [id, t])
+
   useEffect(() => {
     if (id) {
       loadData()
@@ -185,6 +163,7 @@ const useConferenceConfig = (id: string | undefined, t: any) => {
 const ConferenceConfig: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { t } = useTranslation()
   
   // Dùng Hook đã tách logic ở trên
@@ -193,7 +172,7 @@ const ConferenceConfig: React.FC = () => {
     loading, saving, setSaving, publishing, closing,
     activeTab, setActiveTab, error, setError, success, setSuccess,
     loadData, handleUpdateConference, handleUpdateCFP, handlePublishCFP, handleCloseCFP
-  } = useConferenceConfig(id, t)
+  } = useConferenceConfig(id, t, location)
   if (loading) {
     return (
       <div className="d-flex justify-content-center p-5">
@@ -312,12 +291,12 @@ const ConferenceConfig: React.FC = () => {
         </CCardHeader>
         <CCardBody>
           {error && (
-            <CAlert color="danger" className="mb-3" onClose={() => setError('')} dismissible>
+            <CAlert color="danger" className="mb-3" onClose={() => setError('')} dismissible data-testid="cfp-error">
               {error}
             </CAlert>
           )}
           {success && (
-            <CAlert color="success" className="mb-3" onClose={() => setSuccess('')} dismissible>
+            <CAlert color="success" className="mb-3" onClose={() => setSuccess('')} dismissible data-testid="cfp-success">
               {success}
             </CAlert>
           )}
@@ -347,6 +326,7 @@ const ConferenceConfig: React.FC = () => {
                   navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' })
                 }}
                 style={{ cursor: 'pointer' }}
+                data-testid="cfp-tab"
               >
                 {t('conference.cfp') || 'CFP'}
                 {cfp && (
@@ -447,10 +427,11 @@ const ConferenceConfig: React.FC = () => {
               </CForm>
             </CTabPane>
             <CTabPane visible={activeTab === 'cfp'}>
-              <CForm onSubmit={handleUpdateCFP}>
+              <CForm onSubmit={handleUpdateCFP} data-testid="cfp-form">
                 <div className="mb-3">
                   <CFormLabel>{t('conference.cfpDescription') || 'Mô tả CFP (Call for Papers)'}</CFormLabel>
                   <CFormTextarea
+                    data-testid="cfp-call-for-papers"
                     value={cfp?.callForPapers || ''}
                     onChange={(e) => setCfp(cfp ? { ...cfp, callForPapers: e.target.value } : { callForPapers: e.target.value } as any)}
                     rows={8}
@@ -462,6 +443,7 @@ const ConferenceConfig: React.FC = () => {
                     {t('conference.submissionGuidelines') || 'Hướng dẫn nộp bài'}
                   </CFormLabel>
                   <CFormTextarea
+                    data-testid="cfp-submission-guidelines"
                     value={cfp?.submissionGuidelines || ''}
                     onChange={(e) => setCfp(cfp ? { ...cfp, submissionGuidelines: e.target.value } : { submissionGuidelines: e.target.value } as any)}
                     rows={5}
@@ -469,7 +451,7 @@ const ConferenceConfig: React.FC = () => {
                   />
                 </div>
                 <div className="d-flex gap-2 mb-3">
-                  <CButton type="submit" color="primary" disabled={saving}>
+                  <CButton type="submit" color="primary" disabled={saving} data-testid="cfp-save">
                     {saving ? (
                       <>
                         <CSpinner size="sm" className="me-2" />
@@ -487,6 +469,7 @@ const ConferenceConfig: React.FC = () => {
                           color="warning"
                           onClick={handleCloseCFP}
                           disabled={closing}
+                          data-testid="cfp-close"
                         >
                           {closing ? (
                             <>
@@ -506,6 +489,7 @@ const ConferenceConfig: React.FC = () => {
                           color="success"
                           onClick={handlePublishCFP}
                           disabled={publishing}
+                          data-testid="cfp-publish"
                         >
                           {publishing ? (
                             <>
@@ -524,7 +508,7 @@ const ConferenceConfig: React.FC = () => {
                   )}
                 </div>
                 {!cfp && (
-                  <CAlert color="info">
+                  <CAlert color="info" data-testid="cfp-not-created">
                     {t('conference.cfpNotCreated') ||
                       'CFP chưa được tạo. Lưu CFP để tạo mới, sau đó có thể publish.'}
                   </CAlert>
