@@ -30,26 +30,24 @@ const DiscussionPage: React.FC = () => {
     loadData()
   }, [id, submissionId, user]) // Added user to dependencies to react to role changes
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      let currentSubmissionId: number | null = null
-      let reviewData: Review | null = null
-
-      if (id) {
-        // Load by reviewId or assignmentId
+  const fetchSubmissionAndReviewId = async (): Promise<{ subId: number | null, revData: Review | null }> => {
+    if (id) {
+      try {
+        const revData = await reviewService.getReview(parseInt(id))
+        return { subId: revData.submissionId, revData }
+      } catch (error) {
         try {
-          reviewData = await reviewService.getReview(parseInt(id))
+          reviewData = await reviewService.getReview(Number.parseInt(id))
           currentSubmissionId = reviewData.submissionId
         } catch (error) {
           // If reviewId fails, try to load by assignmentId
           try {
-            reviewData = await reviewService.getReviewByAssignment(parseInt(id))
+            reviewData = await reviewService.getReviewByAssignment(Number.parseInt(id))
             if (reviewData) {
               currentSubmissionId = reviewData.submissionId
             } else {
               // If no review found by assignment, try to get assignment to at least get submissionId
-              const assignment = await reviewService.getAssignment(parseInt(id))
+              const assignment = await reviewService.getAssignment(Number.parseInt(id))
               currentSubmissionId = assignment.submissionId
             }
           } catch (e) {
@@ -58,7 +56,7 @@ const DiscussionPage: React.FC = () => {
         }
       } else if (submissionId) {
         // Load by submissionId directly
-        currentSubmissionId = parseInt(submissionId)
+        currentSubmissionId = Number.parseInt(submissionId)
 
         // 1. Logic cho PC/Reviewer: Tìm bài review của mình
         if (!isChairOrAdmin) {
@@ -73,33 +71,68 @@ const DiscussionPage: React.FC = () => {
           } catch (err) {
             // Ignore 403 or other errors when fetching assignments (e.g. Chair viewing discussion)
             console.log('Skipping my-review lookup (possibly Chair role or no assignment)', err)
-          }
+          const revData = await reviewService.getReviewByAssignment(parseInt(id))
+          if (revData) return { subId: revData.submissionId, revData }
+          
+          const assignment = await reviewService.getAssignment(parseInt(id))
+          return { subId: assignment.submissionId, revData: null }
+        } catch (e) {
+          console.error('Failed to load review or assignment by ID:', id, e)
+          return { subId: null, revData: null }
         }
       }
+    } 
+    
+    if (submissionId) {
+      const subId = parseInt(submissionId)
+      let revData: Review | null = null
+      if (!isChairOrAdmin) {
+        try {
+          const assignments = await reviewService.getAssignments()
+          const myAssignment = assignments.find(a => a.submissionId === subId)
+          if (myAssignment?.reviewId) {
+            revData = await reviewService.getReview(myAssignment.reviewId)
+          } else if (myAssignment) {
+            revData = await reviewService.getReviewByAssignment(myAssignment.id)
+          }
+        } catch (err) {
+          console.log('Skipping my-review lookup', err)
+        }
+      }
+      return { subId, revData }
+    }
+    
+    return { subId: null, revData: null }
+  }
 
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      
+      const { subId: currentSubmissionId, revData: reviewData } = await fetchSubmissionAndReviewId()
+      
       setReview(reviewData)
       setActiveSubmissionId(currentSubmissionId)
 
-      // 2. Logic cho Chair/Admin: Load TẤT CẢ reviews để tham khảo
+      // Logic cho Chair/Admin
       if (currentSubmissionId && isChairOrAdmin) {
         try {
           const reviews = await reviewService.getReviewsBySubmission(currentSubmissionId)
           setAllReviews(reviews)
         } catch (e) {
           console.error('Failed to load all reviews for chair', e)
-          setAllReviews([]) // Ensure it's empty on error
+          setAllReviews([])
         }
       } else {
-        setAllReviews([]) // Clear allReviews if not chair or no submissionId
+        setAllReviews([])
       }
 
-      // Load rebuttal nếu có
+      // Load rebuttal
       if (currentSubmissionId) {
         try {
           const rebuttalData = await reviewService.getRebuttal(currentSubmissionId)
           setRebuttal(rebuttalData)
         } catch (error) {
-          // Rebuttal không tồn tại hoặc lỗi khác, không cần log nếu chỉ là 404
           setRebuttal(null)
         }
       } else {

@@ -35,7 +35,7 @@ const SubmissionBoard: React.FC = () => {
     const [searchParams] = useSearchParams()
     const navigate = useNavigate()
     const conferenceId = searchParams.get('conferenceId')
-        ? parseInt(searchParams.get('conferenceId')!)
+        ? Number.parseInt(searchParams.get('conferenceId')!)
         : null
 
     const [submissions, setSubmissions] = useState<Submission[]>([])

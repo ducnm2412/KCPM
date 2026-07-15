@@ -166,7 +166,7 @@ const ManualAssignmentForm: React.FC<ManualAssignmentFormProps> = ({
             <CFormSelect
               data-testid="assignment-reviewer"
               value={selectedReviewerId || ''}
-              onChange={(e) => setSelectedReviewerId(parseInt(e.target.value) || null)}
+              onChange={(e) => setSelectedReviewerId(Number.parseInt(e.target.value) || null)}
             >
               <option value="">-- Chọn reviewer --</option>
               {pcMembers.map((member) => {

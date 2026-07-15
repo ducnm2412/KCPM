@@ -178,7 +178,7 @@ const ReassignmentModal: React.FC<ReassignmentModalProps> = ({
           ) : (
             <CFormSelect
               value={selectedReviewerId || ''}
-              onChange={(e) => setSelectedReviewerId(parseInt(e.target.value) || null)}
+              onChange={(e) => setSelectedReviewerId(Number.parseInt(e.target.value) || null)}
             >
               <option value="">-- Chọn reviewer mới --</option>
               {pcMembers.map((member) => {

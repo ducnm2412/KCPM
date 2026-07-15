@@ -47,7 +47,7 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({ submissionId }) => 
   }, [submissionId])
 
   useEffect(() => {
-    void loadComments()
+    loadComments()
   }, [loadComments])
 
   const handleSendComment = async (e: React.FormEvent) => {

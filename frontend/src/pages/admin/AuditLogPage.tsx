@@ -138,7 +138,7 @@ const AuditLogPage: React.FC = () => {
                 type="number"
                 placeholder={t('admin.userId')}
                 value={filters.userId || ''}
-                onChange={(e) => handleFilterChange('userId', e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) => handleFilterChange('userId', e.target.value ? Number.parseInt(e.target.value) : undefined)}
               />
             </div>
             <div className="col-md-2">
@@ -162,7 +162,7 @@ const AuditLogPage: React.FC = () => {
                 type="number"
                 placeholder={t('admin.resourceId')}
                 value={filters.resourceId || ''}
-                onChange={(e) => handleFilterChange('resourceId', e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) => handleFilterChange('resourceId', e.target.value ? Number.parseInt(e.target.value) : undefined)}
               />
             </div>
             <div className="col-md-2">

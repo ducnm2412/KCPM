@@ -105,8 +105,8 @@ const AutoAssignWithSuggestions: React.FC<AutoAssignWithSuggestionsProps> = ({
     } catch (error: any) {
       setError(
         error.response?.data?.message ||
-          error.response?.data?.error ||
-          'Không thể thực hiện auto-assign'
+        error.response?.data?.error ||
+        'Không thể thực hiện auto-assign'
       )
     } finally {
       setLoading(false)
@@ -148,7 +148,7 @@ const AutoAssignWithSuggestions: React.FC<AutoAssignWithSuggestionsProps> = ({
             max="10"
             value={numberOfReviewers}
             onChange={(e) => {
-              const value = parseInt(e.target.value) || 3
+              const value = Number.parseInt(e.target.value) || 3
               setNumberOfReviewers(value)
               handleAutoSelect()
             }}

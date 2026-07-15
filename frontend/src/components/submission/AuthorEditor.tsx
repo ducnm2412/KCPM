@@ -175,7 +175,7 @@ const AuthorEditor: React.FC<AuthorEditorProps> = ({ authors, onChange }) => {
                 <CTableDataCell>{author.affiliation || '-'}</CTableDataCell>
                 <CTableDataCell>
                   {author.isCorresponding ? (
-                    <span className="badge bg-success">
+                    <span className="badge bg-success" data-testid="author-corresponding">
                       {t('submission.corresponding') || 'Tác giả liên hệ'}
                     </span>
                   ) : (

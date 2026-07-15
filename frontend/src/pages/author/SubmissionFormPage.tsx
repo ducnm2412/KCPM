@@ -18,7 +18,7 @@ import SubmissionForm from '../../components/submission/SubmissionForm'
 const SubmissionFormPage: React.FC = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const conferenceId = parseInt(searchParams.get('conferenceId') || '0')
+  const conferenceId = Number.parseInt(searchParams.get('conferenceId') || '0')
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [isRestricted, setIsRestricted] = useState(false)

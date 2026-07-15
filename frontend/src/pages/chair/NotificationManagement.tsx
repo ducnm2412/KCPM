@@ -44,7 +44,7 @@ import { aiService } from '../../services/ai.service'
 const NotificationManagement: React.FC = () => {
     const [searchParams] = useSearchParams()
     const conferenceId = searchParams.get('conferenceId')
-        ? parseInt(searchParams.get('conferenceId')!)
+        ? Number.parseInt(searchParams.get('conferenceId')!)
         : null
 
     const [pendingNotifications, setPendingNotifications] = useState<Decision[]>([])

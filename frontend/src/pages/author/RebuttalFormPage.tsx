@@ -26,7 +26,7 @@ const RebuttalFormPage: React.FC = () => {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const submissionId = id ? parseInt(id) : null
+  const submissionId = id ? Number.parseInt(id) : null
   const [content, setContent] = useState('')
   const [rebuttal, setRebuttal] = useState<Rebuttal | null>(null)
   const [loading, setLoading] = useState(false)

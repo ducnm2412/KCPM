@@ -93,7 +93,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   }, [conferenceId])
 
   useEffect(() => {
-    void loadCFP()
+    loadCFP()
   }, [loadCFP])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,53 +132,70 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     }
   }
 
-  // AI Actions
+  // Các hàm helper tách nhỏ logic cho từng AI Action
+  const performSpellCheck = async () => {
+    const result = await aiService.spellCheck({
+      conferenceId,
+      abstractText: abstract,
+      title: title,
+      language: t('common.locale') === 'vi' ? 'vi' : 'en'
+    })
+    if (result.success && result.suggestions.length > 0) {
+      setAiSuggestions(result.suggestions.map(s => ({
+        before: s.original,
+        after: s.replacement,
+        explanation: s.explanation,
+        changeType: s.type,
+        field: s.field
+      })))
+      setAiModalTitle(t('ai.spellCheck'))
+      setShowAiModal(true)
+    } else {
+      alert(t('ai.noIssues'))
+    }
+  }
+
+  const performPolish = async () => {
+    const result = await aiService.abstractPolish({
+      conferenceId,
+      abstractText: abstract,
+      language: t('common.locale') === 'vi' ? 'vi' : 'en'
+    })
+    if (result.success) {
+      setAiSuggestions(result.changes)
+      setAiModalTitle(t('ai.abstractPolish'))
+      setShowAiModal(true)
+    }
+  }
+
+  const performSuggestKeywords = async () => {
+    const result = await aiService.keywordSuggest({
+      conferenceId,
+      abstractText: abstract,
+      title: title,
+    })
+    if (result.success) {
+      setAiKeywords(result.keywords)
+      setShowKeywordPicker(true)
+    }
+  }
+
+  // Hàm handleAIAction chính đã được làm gọn
   const handleAIAction = async (field: 'abstract' | 'keywords', action: string) => {
     try {
       setAiLoading(true)
       setError('')
 
-      if (action === 'spell_check') {
-        const result = await aiService.spellCheck({
-          conferenceId,
-          abstractText: abstract,
-          title: title,
-          language: t('common.locale') === 'vi' ? 'vi' : 'en'
-        })
-        if (result.success && result.suggestions.length > 0) {
-          setAiSuggestions(result.suggestions.map(s => ({
-            before: s.original,
-            after: s.replacement,
-            explanation: s.explanation,
-            changeType: s.type,
-            field: s.field
-          })))
-          setAiModalTitle(t('ai.spellCheck'))
-          setShowAiModal(true)
-        } else {
-          alert(t('ai.noIssues'))
-        }
-      } else if (action === 'polish') {
-        const result = await aiService.abstractPolish({
-          conferenceId,
-          abstractText: abstract,
-          language: t('common.locale') === 'vi' ? 'vi' : 'en'
-        })
-        if (result.success) {
-          setAiSuggestions(result.changes)
-          setAiModalTitle(t('ai.abstractPolish'))
-          setShowAiModal(true)
-        }
-      } else if (action === 'suggest_keywords') {
-        const result = await aiService.keywordSuggest({
-          conferenceId,
-          abstractText: abstract,
-          title: title,
-        })
-        if (result.success) {
-          setAiKeywords(result.keywords)
-          setShowKeywordPicker(true)
-        }
+      switch (action) {
+        case 'spell_check':
+          await performSpellCheck()
+          break
+        case 'polish':
+          await performPolish()
+          break
+        case 'suggest_keywords':
+          await performSuggestKeywords()
+          break
       }
     } catch (err: any) {
       setError(t('ai.error', { message: err.message }))
@@ -186,7 +203,6 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       setAiLoading(false)
     }
   }
-
   const applyAISuggestions = (selectedIndices: number[]) => {
     let newAbstract = abstract
     let newTitle = title
@@ -285,7 +301,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
             data-testid="submission-track"
             className="form-select"
             value={trackId || ''}
-            onChange={(e) => setTrackId(e.target.value ? parseInt(e.target.value) : undefined)}
+            onChange={(e) => setTrackId(e.target.value ? Number.parseInt(e.target.value) : undefined)}
           >
             <option value="">Chọn lĩnh vực</option>
             {cfp.tracks.map((track) => (

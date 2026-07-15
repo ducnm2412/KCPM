@@ -108,7 +108,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   }, [reviewId, assignmentId])
 
   useEffect(() => {
-    void loadReview()
+    loadReview()
   }, [loadReview])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -302,7 +302,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               max="5"
               value={overallRating ?? ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setOverallRating(e.target.value ? parseInt(e.target.value) : undefined)
+                setOverallRating(e.target.value ? Number.parseInt(e.target.value) : undefined)
               }
               placeholder="Tùy chọn"
               disabled={isDeadlinePassed || !canEdit}
@@ -318,7 +318,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               max="5"
               value={confidence ?? ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setConfidence(e.target.value ? parseInt(e.target.value) : undefined)
+                setConfidence(e.target.value ? Number.parseInt(e.target.value) : undefined)
               }
               placeholder="Tùy chọn"
               disabled={isDeadlinePassed || !canEdit}

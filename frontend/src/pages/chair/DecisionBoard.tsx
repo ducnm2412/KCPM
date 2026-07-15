@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import {
   CCard,
@@ -46,13 +47,15 @@ import { conferenceService, ConferenceResponse } from '../../services/conference
  * - Accept/Reject submissions
  * - Gửi notifications
  * - Xem review summary
- */
+
 const DecisionBoard: React.FC = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const conferenceId = searchParams.get('conferenceId')
-    ? parseInt(searchParams.get('conferenceId')!)
+    ? Number.parseInt(searchParams.get('conferenceId')!)
     : null
+// 1. TẠO CUSTOM HOOK
+const useDecisionBoardLogic = (conferenceId: number | null, navigate: any) => {
   const [decisions, setDecisions] = useState<Decision[]>([])
   const [loading, setLoading] = useState(true)
   const [showDecisionModal, setShowDecisionModal] = useState(false)
@@ -64,38 +67,35 @@ const DecisionBoard: React.FC = () => {
   const [sendingNotification, setSendingNotification] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  // Edit decision states
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingDecision, setEditingDecision] = useState<Decision | null>(null)
   const [editType, setEditType] = useState<DecisionType>('ACCEPT')
   const [editComments, setEditComments] = useState('')
   const [editReason, setEditReason] = useState('')
-  // Bulk states
   const [selectedSubmissionIds, setSelectedSubmissionIds] = useState<number[]>([])
   const [showBulkModal, setShowBulkModal] = useState(false)
-  // History states
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   const [historyList, setHistoryList] = useState<DecisionHistory[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
-
-  // Conference selection states
   const [myConferences, setMyConferences] = useState<ConferenceResponse[]>([])
   const [isSelectingConference, setIsSelectingConference] = useState(false)
-
-  useEffect(() => {
-    if (conferenceId) {
-      loadDecisions()
-    } else {
-      loadMyConferences()
+  const loadDecisions = useCallback(async () => {
+    try {
+      setLoading(true)
+      const data = await decisionService.getDecisionsByConference(conferenceId!)
+      setDecisions(data)
+    } catch (error) {
+      console.error('Error loading decisions:', error)
+      setError('Không thể tải danh sách quyết định')
+    } finally {
+      setLoading(false)
     }
   }, [conferenceId])
-
-  const loadMyConferences = async () => {
+  const loadMyConferences = useCallback(async () => {
     try {
       setLoading(true)
       const data = await conferenceService.getMyConferences()
       if (data.length === 1) {
-        // Auto select if only one
         navigate(`?conferenceId=${data[0].id}`, { replace: true })
       } else {
         setMyConferences(data)
@@ -107,46 +107,29 @@ const DecisionBoard: React.FC = () => {
       setError('Không thể tải danh sách hội nghị')
       setLoading(false)
     }
-  }
-
-  const loadDecisions = async () => {
-    try {
-      setLoading(true)
-      const data = await decisionService.getDecisionsByConference(conferenceId!)
-      setDecisions(data)
-    } catch (error) {
-      console.error('Error loading decisions:', error)
-      setError('Không thể tải danh sách quyết định')
-    } finally {
-      setLoading(false)
+  }, [navigate])
+  useEffect(() => {
+    if (conferenceId) {
+      loadDecisions()
+    } else {
+      loadMyConferences()
     }
-  }
-
+  }, [conferenceId, loadDecisions, loadMyConferences])
+  // --- Các hàm handle khác mang từ component cũ qua ---
   const handleOpenDecisionModal = (submissionId: number) => {
-    setSelectedSubmissionId(submissionId)
-    setDecisionType('ACCEPT')
-    setComments('')
-    setSendNotification(true)
-    setShowDecisionModal(true)
+    setSelectedSubmissionId(submissionId); setDecisionType('ACCEPT')
+    setComments(''); setSendNotification(true); setShowDecisionModal(true)
   }
-
   const handleMakeDecision = async () => {
     if (!selectedSubmissionId) return
-
     try {
-      setSaving(true)
-      setError('')
-      const request: CreateDecisionRequest = {
-        submissionId: selectedSubmissionId,
-        type: decisionType,
-        comments: comments.trim() || undefined,
-        sendNotification,
-      }
-      await decisionService.createDecision(request)
+      setSaving(true); setError('')
+      await decisionService.createDecision({
+        submissionId: selectedSubmissionId, type: decisionType,
+        comments: comments.trim() || undefined, sendNotification,
+      })
       setSuccess('Đã tạo quyết định thành công')
-      setShowDecisionModal(false)
-      setSelectedSubmissionId(null)
-      setComments('')
+      setShowDecisionModal(false); setSelectedSubmissionId(null); setComments('')
       await loadDecisions()
     } catch (error: any) {
       setError(error.response?.data?.message || 'Không thể tạo quyết định')
@@ -154,40 +137,26 @@ const DecisionBoard: React.FC = () => {
       setSaving(false)
     }
   }
-
   const handleSelectAll = (pendingList: Decision[]) => {
-    if (selectedSubmissionIds.length === pendingList.length) {
-      setSelectedSubmissionIds([])
-    } else {
-      setSelectedSubmissionIds(pendingList.map(item => item.submissionId))
-    }
+    setSelectedSubmissionIds(selectedSubmissionIds.length === pendingList.length 
+      ? [] 
+      : pendingList.map(item => item.submissionId))
   }
-
   const handleSelectOne = (submissionId: number) => {
-    if (selectedSubmissionIds.includes(submissionId)) {
-      setSelectedSubmissionIds(selectedSubmissionIds.filter(id => id !== submissionId))
-    } else {
-      setSelectedSubmissionIds([...selectedSubmissionIds, submissionId])
-    }
+    setSelectedSubmissionIds(prev => prev.includes(submissionId) 
+      ? prev.filter(id => id !== submissionId) 
+      : [...prev, submissionId])
   }
-
   const handleMakeBulkDecision = async () => {
     if (selectedSubmissionIds.length === 0) return
-
     try {
-      setSaving(true)
-      setError('')
-      const request: BulkDecisionRequest = {
-        submissionIds: selectedSubmissionIds,
-        type: decisionType,
-        comments: comments.trim() || undefined,
-        sendNotification,
-      }
-      await decisionService.createBulkDecisions(request)
+      setSaving(true); setError('')
+      await decisionService.createBulkDecisions({
+        submissionIds: selectedSubmissionIds, type: decisionType,
+        comments: comments.trim() || undefined, sendNotification,
+      })
       setSuccess(`Đã tạo quyết định cho ${selectedSubmissionIds.length} bài báo thành công`)
-      setShowBulkModal(false)
-      setSelectedSubmissionIds([])
-      setComments('')
+      setShowBulkModal(false); setSelectedSubmissionIds([]); setComments('')
       await loadDecisions()
     } catch (error: any) {
       setError(error.response?.data?.message || 'Không thể tạo quyết định hàng loạt')
@@ -195,24 +164,19 @@ const DecisionBoard: React.FC = () => {
       setSaving(false)
     }
   }
-
   const handleViewHistory = async (decisionId: number) => {
     try {
-      setLoadingHistory(true)
-      setShowHistoryModal(true)
-      const logs = await decisionService.getDecisionHistory(decisionId)
-      setHistoryList(logs)
+      setLoadingHistory(true); setShowHistoryModal(true)
+      setHistoryList(await decisionService.getDecisionHistory(decisionId))
     } catch (error: any) {
       setError('Không thể tải lịch sử quyết định')
     } finally {
       setLoadingHistory(false)
     }
   }
-
   const handleSendNotification = async (decisionId: number) => {
     try {
-      setSendingNotification(decisionId)
-      setError('')
+      setSendingNotification(decisionId); setError('')
       await decisionService.sendNotification(decisionId)
       setSuccess('Đã gửi notification thành công')
       await loadDecisions()
@@ -222,41 +186,65 @@ const DecisionBoard: React.FC = () => {
       setSendingNotification(null)
     }
   }
-
   const handleOpenEditModal = (decision: Decision) => {
-    setEditingDecision(decision)
-    setEditType(decision.type)
-    setEditComments(decision.comments || '')
-    setEditReason('')
+    setEditingDecision(decision); setEditType(decision.type)
+    setEditComments(decision.comments || ''); setEditReason('')
     setShowEditModal(true)
   }
-
   const handleUpdateDecision = async () => {
     if (!editingDecision || !editReason.trim()) {
-      setError('Vui lòng nhập lý do thay đổi')
-      return
+      setError('Vui lòng nhập lý do thay đổi'); return
     }
-
     try {
-      setSaving(true)
-      setError('')
-      const request: UpdateDecisionRequest = {
+      setSaving(true); setError('')
+      await decisionService.updateDecision(editingDecision.id, {
         type: editType !== editingDecision.type ? editType : undefined,
         comments: editComments !== editingDecision.comments ? editComments : undefined,
         reason: editReason.trim(),
-      }
-      await decisionService.updateDecision(editingDecision.id, request)
+      })
       setSuccess('Đã cập nhật quyết định thành công')
-      setShowEditModal(false)
-      setEditingDecision(null)
-      setEditReason('')
-      await loadDecisions()
+      setShowEditModal(false); await loadDecisions()
     } catch (error: any) {
       setError(error.response?.data?.message || 'Không thể cập nhật quyết định')
     } finally {
       setSaving(false)
     }
   }
+  return {
+    decisions, loading, showDecisionModal, setShowDecisionModal,
+    decisionType, setDecisionType, comments, setComments, sendNotification, setSendNotification,
+    saving, sendingNotification, error, setError, success, setSuccess,
+    showEditModal, setShowEditModal, editingDecision, editType, setEditType,
+    editComments, setEditComments, editReason, setEditReason,
+    selectedSubmissionIds, setSelectedSubmissionIds, showBulkModal, setShowBulkModal,
+    showHistoryModal, setShowHistoryModal, historyList, loadingHistory,
+    myConferences, isSelectingConference,
+    handleOpenDecisionModal, handleMakeDecision, handleSelectAll, handleSelectOne,
+    handleMakeBulkDecision, handleViewHistory, handleSendNotification,
+    handleOpenEditModal, handleUpdateDecision
+  }
+}
+// 2. COMPONENT CHÍNH CHỈ ĐỂ RENDER
+const DecisionBoard: React.FC = () => {
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const conferenceId = searchParams.get('conferenceId')
+    ? parseInt(searchParams.get('conferenceId')!)
+    : null
+  // Lấy data từ Custom Hook
+  const {
+    decisions, loading, showDecisionModal, setShowDecisionModal,
+    decisionType, setDecisionType, comments, setComments, sendNotification, setSendNotification,
+    saving, sendingNotification, error, setError, success, setSuccess,
+    showEditModal, setShowEditModal, editingDecision, editType, setEditType,
+    editComments, setEditComments, editReason, setEditReason,
+    selectedSubmissionIds, setSelectedSubmissionIds, showBulkModal, setShowBulkModal,
+    showHistoryModal, setShowHistoryModal, historyList, loadingHistory,
+    myConferences, isSelectingConference,
+    handleOpenDecisionModal, handleMakeDecision, handleSelectAll, handleSelectOne,
+    handleMakeBulkDecision, handleViewHistory, handleSendNotification,
+    handleOpenEditModal, handleUpdateDecision
+  } = useDecisionBoardLogic(conferenceId, navigate)
 
   const getDecisionBadge = (type: DecisionType) => {
     const colorMap: Record<DecisionType, string> = {
