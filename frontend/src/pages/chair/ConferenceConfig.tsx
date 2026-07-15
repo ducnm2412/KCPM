@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import {
   CCard,
   CCardBody,
@@ -43,14 +42,13 @@ import DeadlineEditor from '../../components/conference/DeadlineEditor'
  * - Cấu hình CFP (call for papers, submission guidelines)
  * - Publish/Close CFP
  * - Chỉ CHAIR mới có quyền
-
-const ConferenceConfig: React.FC = () => {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { t } = useTranslation()
+ */
 // 1. TẠO CUSTOM HOOK ĐỂ CHỨA TOÀN BỘ LOGIC
-const useConferenceConfig = (id: string | undefined, t: any) => {
+const useConferenceConfig = (
+  id: string | undefined,
+  t: any,
+  location: ReturnType<typeof useLocation>,
+) => {
   const [conference, setConference] = useState<ConferenceResponse | null>(null)
   const [cfp, setCfp] = useState<CFPResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -67,12 +65,6 @@ const useConferenceConfig = (id: string | undefined, t: any) => {
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
-    if (id) {
-      loadData()
-    }
-  }, [id])
-
-  useEffect(() => {
     const tabs = ['basic', 'cfp', 'tracks', 'deadlines'] as const
     const params = new URLSearchParams(location.search)
     const requestedTab = params.get('tab')
@@ -81,7 +73,6 @@ const useConferenceConfig = (id: string | undefined, t: any) => {
     }
   }, [location.search])
 
-  const loadData = async () => {
   const loadData = useCallback(async () => {
     try {
       setLoading(true)
@@ -185,6 +176,7 @@ const useConferenceConfig = (id: string | undefined, t: any) => {
 const ConferenceConfig: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { t } = useTranslation()
   
   // Dùng Hook đã tách logic ở trên
@@ -193,7 +185,7 @@ const ConferenceConfig: React.FC = () => {
     loading, saving, setSaving, publishing, closing,
     activeTab, setActiveTab, error, setError, success, setSuccess,
     loadData, handleUpdateConference, handleUpdateCFP, handlePublishCFP, handleCloseCFP
-  } = useConferenceConfig(id, t)
+  } = useConferenceConfig(id, t, location)
   if (loading) {
     return (
       <div className="d-flex justify-content-center p-5">
