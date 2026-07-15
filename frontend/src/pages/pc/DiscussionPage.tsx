@@ -54,34 +54,7 @@ const DiscussionPage: React.FC = () => {
             console.error('Failed to load review or assignment by ID:', id, e)
           }
         }
-      } else if (submissionId) {
-        // Load by submissionId directly
-        currentSubmissionId = Number.parseInt(submissionId)
-
-        // 1. Logic cho PC/Reviewer: Tìm bài review của mình
-        if (!isChairOrAdmin) {
-          try {
-            const assignments = await reviewService.getAssignments()
-            const myAssignment = assignments.find(a => a.submissionId === currentSubmissionId)
-            if (myAssignment && myAssignment.reviewId) {
-              reviewData = await reviewService.getReview(myAssignment.reviewId)
-            } else if (myAssignment) { // If assignment exists but no reviewId, try getting review by assignment ID
-              reviewData = await reviewService.getReviewByAssignment(myAssignment.id)
-            }
-          } catch (err) {
-            // Ignore 403 or other errors when fetching assignments (e.g. Chair viewing discussion)
-            console.log('Skipping my-review lookup (possibly Chair role or no assignment)', err)
-          const revData = await reviewService.getReviewByAssignment(parseInt(id))
-          if (revData) return { subId: revData.submissionId, revData }
-          
-          const assignment = await reviewService.getAssignment(parseInt(id))
-          return { subId: assignment.submissionId, revData: null }
-        } catch (e) {
-          console.error('Failed to load review or assignment by ID:', id, e)
-          return { subId: null, revData: null }
-        }
       }
-    } 
     
     if (submissionId) {
       const subId = parseInt(submissionId)
