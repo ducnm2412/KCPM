@@ -32,32 +32,30 @@ const DiscussionPage: React.FC = () => {
 
   const fetchSubmissionAndReviewId = async (): Promise<{ subId: number | null, revData: Review | null }> => {
     if (id) {
+      const numericId = Number.parseInt(id, 10)
+
       try {
-        const revData = await reviewService.getReview(parseInt(id))
+        const revData = await reviewService.getReview(numericId)
         return { subId: revData.submissionId, revData }
       } catch (error) {
+        // If reviewId fails, try to load by assignmentId.
         try {
-          reviewData = await reviewService.getReview(Number.parseInt(id))
-          currentSubmissionId = reviewData.submissionId
-        } catch (error) {
-          // If reviewId fails, try to load by assignmentId
-          try {
-            reviewData = await reviewService.getReviewByAssignment(Number.parseInt(id))
-            if (reviewData) {
-              currentSubmissionId = reviewData.submissionId
-            } else {
-              // If no review found by assignment, try to get assignment to at least get submissionId
-              const assignment = await reviewService.getAssignment(Number.parseInt(id))
-              currentSubmissionId = assignment.submissionId
-            }
-          } catch (e) {
-            console.error('Failed to load review or assignment by ID:', id, e)
+          const revData = await reviewService.getReviewByAssignment(numericId)
+          if (revData) {
+            return { subId: revData.submissionId, revData }
           }
+
+          const assignment = await reviewService.getAssignment(numericId)
+          return { subId: assignment.submissionId, revData: null }
+        } catch (e) {
+          console.error('Failed to load review or assignment by ID:', id, e)
         }
       }
+      return { subId: null, revData: null }
+    }
     
     if (submissionId) {
-      const subId = parseInt(submissionId)
+      const subId = Number.parseInt(submissionId, 10)
       let revData: Review | null = null
       if (!isChairOrAdmin) {
         try {
